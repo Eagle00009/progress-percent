@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0b1020" />
+<title>Progress % — Measure Life in the Smallest Unit</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --panel2:#f0f3f9; --text:#111827; --muted:#6b7280;
+    --line:#e5e7eb; --accent:#6d5dfc; --accent2:#24c8a5; --danger:#ef4444;
+    --shadow:0 18px 55px rgba(17,24,39,.10); --radius:22px;
+  }
+  [data-theme="dark"]{
+    --bg:#080d19; --panel:#111827; --panel2:#182235; --text:#f8fafc; --muted:#94a3b8;
+    --line:#263247; --accent:#8b7cff; --accent2:#36d7b4; --danger:#fb7185;
+    --shadow:0 22px 65px rgba(0,0,0,.32);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(109,93,252,.12), transparent 28%),
+      radial-gradient(circle at 100% 20%, rgba(36,200,165,.10), transparent 24%), var(--bg);
+    color:var(--text); min-height:100vh;
+  }
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{max-width:1440px;margin:auto;padding:22px}
+  .topbar{
+    display:flex;gap:18px;align-items:center;justify-content:space-between;margin-bottom:22px;position:sticky;top:0;z-index:20;
+    padding:14px 16px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--bg) 78%,transparent);
+    backdrop-filter:blur(18px);border-radius:24px;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--shadow)}
+  .brand h1{font-size:18px;margin:0}.brand small{color:var(--muted)}
+  .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:700;transition:.2s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 9px 25px rgba(0,0,0,.08)}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),#7f6fff);border-color:transparent;color:#fff}
+  .btn.ghost{background:transparent}
+  .btn.danger{color:var(--danger)}
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-bottom:18px}
+  .card{background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .hero-main{padding:28px;position:relative;overflow:hidden}
+  .hero-main:after{content:"";position:absolute;right:-90px;top:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(109,93,252,.25),transparent 65%)}
+  .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:900;color:var(--accent)}
+  .hero h2{font-size:clamp(28px,4vw,52px);line-height:1.03;margin:10px 0 12px;max-width:800px}
+  .hero p{color:var(--muted);max-width:740px;font-size:15px;line-height:1.65}
+  .overall-row{display:flex;gap:20px;align-items:center;margin-top:22px;flex-wrap:wrap}
+  .ring{
+    --p:0; width:150px;height:150px;border-radius:50%;display:grid;place-items:center;
+    background:conic-gradient(var(--accent) calc(var(--p)*1%), color-mix(in srgb,var(--line) 78%,transparent) 0);
+    position:relative;flex:0 0 auto
+  }
+  .ring:before{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--panel)}
+  .ring strong,.ring span{position:relative;z-index:2}.ring strong{font-size:34px}.ring span{font-size:12px;color:var(--muted);display:block;text-align:center}
+  .mini-stats{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:10px;flex:1}
+  .mini{padding:13px;border-radius:16px;background:var(--panel2)} .mini b{display:block;font-size:20px}.mini span{color:var(--muted);font-size:12px}
+  .philosophy{padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+  .quote{font-size:21px;line-height:1.4;font-weight:800}
+  .quote span{color:var(--accent)}
+  .unit-chain{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:18px}
+  .pill{padding:7px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:12px;font-weight:700}
+  .arrow{color:var(--muted)}
+  .section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:26px 2px 12px}
+  .section-head h3{margin:0;font-size:22px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  .period-tabs{display:flex;gap:6px;flex-wrap:wrap}.period-tabs button{padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font-weight:800}
+  .period-tabs button.active{background:var(--text);color:var(--bg)}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .category{padding:18px;transition:.2s;position:relative;overflow:hidden}
+  .category:hover{transform:translateY(-2px)}
+  .cat-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .cat-name{display:flex;gap:10px;align-items:center}.icon{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:var(--panel2);font-size:20px}
+  .cat-name h4{margin:0;font-size:16px}.cat-name small{color:var(--muted)}
+  .pct{font-size:26px;font-weight:900}
+  .bar{height:9px;border-radius:999px;background:var(--panel2);overflow:hidden;margin:14px 0 9px}
+  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.35s}
+  .unit-line{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
+  .quick{display:flex;gap:7px;margin-top:14px}
+  .quick button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:8px;font-weight:800}
+  .quick button:hover{border-color:var(--accent)}
+  .lower{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:18px}
+  .chart-card,.log-card{padding:20px}
+  canvas{width:100%;height:220px;display:block}
+  .log-list{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow:auto;padding-right:4px}
+  .log-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--panel2)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .log-item b{font-size:13px}.log-item small{display:block;color:var(--muted);margin-top:2px}.log-item em{font-style:normal;font-weight:900;font-size:12px}
+  .insight{margin-top:16px;padding:15px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--panel)),color-mix(in srgb,var(--accent2) 10%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line))}
+  .insight b{display:block;margin-bottom:4px}.insight span{font-size:13px;color:var(--muted)}
+  .footer{padding:30px 3px 60px;color:var(--muted);font-size:12px;text-align:center}
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(3,7,18,.62);display:none;place-items:center;padding:18px;backdrop-filter:blur(10px)}
+  .modal.show{display:grid}
+  .modal-box{width:min(640px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h3{margin:0}
+  .x{border:0;background:var(--panel2);color:var(--text);width:38px;height:38px;border-radius:12px;font-size:18px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin:0 0 6px}
+  input,select,textarea{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:11px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}
+  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
+  .empty{padding:28px;text-align:center;color:var(--muted)}
+  .toast{position:fixed;right:22px;bottom:22px;background:var(--text);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:800;box-shadow:var(--shadow);opacity:0;transform:translateY(15px);pointer-events:none;transition:.25s;z-index:90}
+  .toast.show{opacity:1;transform:translateY(0)}
+  @media(max-width:1000px){.hero,.lower{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){
+    .app{padding:10px}.topbar{top:6px;border-radius:18px}.brand small{display:none}.top-actions .hide-mobile{display:none}
+    .hero-main,.philosophy,.chart-card,.log-card{padding:17px}.grid{grid-template-columns:1fr}.mini-stats{grid-template-columns:repeat(3,1fr)}
+    .ring{width:120px;height:120px}.ring:before{inset:10px}.ring strong{font-size:27px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}
+    .hero h2{font-size:34px}.section-head{align-items:flex-start;flex-direction:column}
+  }
+</style>
+</head>
+<body data-theme="dark">
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">%</div>
+      <div><h1>Progress %</h1><small>Measure the smallest unit. Improve the whole life.</small></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost hide-mobile" id="themeBtn">☀️ Light</button>
+      <button class="btn" id="exportBtn">Export</button>
+      <button class="btn primary" id="addGoalBtn">+ Add goal</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <article class="card hero-main">
+      <div class="eyebrow">Your life dashboard</div>
+      <h2>Progress becomes real when you can <span style="color:var(--accent)">count it.</span></h2>
+      <p>Track your life from the bottom up: one minute, one rep, one page, one check-in, one rupee, one meaningful action. Every smallest unit rolls up into a percentage you can improve.</p>
+      <div class="overall-row">
+        <div class="ring" id="overallRing" style="--p:0">
+          <div><strong id="overallPct">0%</strong><span>overall progress</span></div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini"><b id="onePercent">0</b><span>1% better score</span></div>
+          <div class="mini"><b id="streak">0d</b><span>logging streak</span></div>
+          <div class="mini"><b id="unitsToday">0</b><span>units logged today</span></div>
+        </div>
+      </div>
+    </article>
+
+    <aside class="card philosophy">
+      <div>
+        <div class="eyebrow">The operating principle</div>
+        <div class="quote">“Track progress in <span>percentage</span>. Track action in the <span>smallest useful unit</span>.”</div>
+      </div>
+      <div>
+        <div class="unit-chain">
+          <span class="pill">1 unit</span><span class="arrow">→</span>
+          <span class="pill">Goal</span><span class="arrow">→</span>
+          <span class="pill">Category</span><span class="arrow">→</span>
+          <span class="pill">Life %</span>
+        </div>
+        <div class="insight"><b id="coachTitle">Start with one unit.</b><span id="coachText">Logging something tiny today is more useful than planning something perfect tomorrow.</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <div class="section-head">
+    <div><h3>Your progress system</h3><p>Each card converts a real-world unit into a percentage.</p></div>
+    <div class="period-tabs" id="periodTabs">
+      <button data-period="day" class="active">Day</button>
+      <button data-period="week">Week</button>
+      <button data-period="month">Month</button>
+      <button data-period="year">Year</button>
+    </div>
+  </div>
+
+  <section class="grid" id="categoryGrid"></section>
+
+  <section class="lower">
+    <article class="card chart-card">
+      <div class="section-head" style="margin:0 0 8px">
+        <div><h3>Progress trend</h3><p>Your percentage over the latest seven logged days.</p></div>
+      </div>
+      <canvas id="trendCanvas" width="900" height="300"></canvas>
+    </article>
+    <aside class="card log-card">
+      <div class="section-head" style="margin:0 0 12px">
+        <div><h3>Recent units</h3><p>Every small action leaves a record.</p></div>
+        <button class="btn" id="noteBtn">+ Note</button>
+      </div>
+      <div class="log-list" id="logList"></div>
+    </aside>
+  </section>
+
+  <div class="footer">Progress % MVP • Data is stored locally in this browser. Built for fast daily logging and later app migration.</div>
+</div>
+
+<div class="modal" id="goalModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="goalModalTitle">Add a measurable goal</h3><button class="x" data-close="goalModal">×</button></div>
+    <form id="goalForm">
+      <input type="hidden" id="goalId" />
+      <div class="form-grid">
+        <div><label>Category</label><select id="goalCategory"></select></div>
+        <div><label>Goal name</label><input id="goalName" required placeholder="Read technical material" /></div>
+        <div><label>Smallest unit</label><input id="goalUnit" required placeholder="pages" /></div>
+        <div><label>Target per day</label><input id="goalTarget" type="number" min="0.01" step="0.01" required placeholder="20" /></div>
+        <div><label>Quick add amount</label><input id="goalQuick" type="number" min="0.01" step="0.01" required placeholder="1" /></div>
+        <div><label>Weight in category</label><input id="goalWeight" type="number" min="1" max="100" step="1" required value="1" /></div>
+        <div class="full"><label>Why this matters</label><textarea id="goalWhy" placeholder="A short reason that keeps the metric meaningful."></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn danger" id="deleteGoalBtn" style="display:none">Delete</button>
+        <button type="button" class="btn" data-close="goalModal">Cancel</button>
+        <button class="btn primary" type="submit">Save goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="logModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Log a unit</h3><button class="x" data-close="logModal">×</button></div>
+    <form id="logForm">
+      <input type="hidden" id="logGoalId" />
+      <div class="form-grid">
+        <div><label>Goal</label><input id="logGoalName" disabled /></div>
+        <div><label>Amount</label><input id="logAmount" type="number" step="0.01" required /></div>
+        <div class="full"><label>Optional note</label><textarea id="logNote" placeholder="What happened?"></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close="logModal">Cancel</button>
+        <button class="btn primary" type="submit">Log progress</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="noteModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Add a life note</h3><button class="x" data-close="noteModal">×</button></div>
+    <form id="noteForm">
+      <div><label>Reflection / observation</label><textarea id="noteText" required placeholder="What did you notice about yourself today?"></textarea></div>
+      <div class="modal-actions"><button type="button" class="btn" data-close="noteModal">Cancel</button><button class="btn primary">Save note</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const CATS = {
+  sleep:{name:"Sleep",icon:"🌙",hint:"minutes"},
+  learning:{name:"Learning",icon:"🧠",hint:"minutes / pages"},
+  fitness:{name:"Fitness",icon:"🏃",hint:"reps / steps / minutes"},
+  emotions:{name:"Emotions",icon:"🫶",hint:"check-ins"},
+  work:{name:"Work / Career",icon:"💼",hint:"tasks / deliverables"},
+  money:{name:"Money",icon:"₹",hint:"rupees / actions"},
+  relationships:{name:"Relationships",icon:"🤝",hint:"meaningful actions"},
+  habits:{name:"Habits / Discipline",icon:"⚡",hint:"repetitions"},
+  other:{name:"Everything Else",icon:"✨",hint:"custom units"}
+};
+
+const starterGoals = [
+  {id:"g_sleep",cat:"sleep",name:"Sleep",unit:"minutes",target:480,quick:30,weight:1,why:"Protect energy and recovery."},
+  {id:"g_learn",cat:"learning",name:"Focused learning",unit:"minutes",target:60,quick:15,weight:1,why:"Compound knowledge every day."},
+  {id:"g_pages",cat:"learning",name:"Read",unit:"pages",target:20,quick:5,weight:1,why:"Turn ideas into a countable input."},
+  {id:"g_fit",cat:"fitness",name:"Movement",unit:"minutes",target:45,quick:10,weight:1,why:"Build physical capacity."},
+  {id:"g_steps",cat:"fitness",name:"Walking",unit:"steps",target:8000,quick:1000,weight:1,why:"Keep baseline movement high."},
+  {id:"g_emotion",cat:"emotions",name:"Emotion check-in",unit:"check-ins",target:3,quick:1,weight:1,why:"Notice before reacting."},
+  {id:"g_work",cat:"work",name:"High-value work",unit:"focus blocks",target:4,quick:1,weight:1,why:"Measure output, not busyness."},
+  {id:"g_money",cat:"money",name:"Money review",unit:"actions",target:1,quick:1,weight:1,why:"Keep finances visible."},
+  {id:"g_rel",cat:"relationships",name:"Meaningful connection",unit:"check-ins",target:2,quick:1,weight:1,why:"Relationships improve through attention."},
+  {id:"g_habit",cat:"habits",name:"Planned habits",unit:"repetitions",target:5,quick:1,weight:1,why:"Discipline is repeated evidence."}
+];
+
+const todayKey = () => new Date().toISOString().slice(0,10);
+const nowISO = () => new Date().toISOString();
+
+function seedDemoLogs(goals){
+  const logs=[];
+  const today=new Date();
+  const amounts={g_sleep:.88,g_learn:.75,g_pages:.55,g_fit:.9,g_steps:.72,g_emotion:.67,g_work:.75,g_money:1,g_rel:.5,g_habit:.8};
+  for(let d=6;d>=0;d--){
+    const dt=new Date(today); dt.setDate(today.getDate()-d);
+    const date=dt.toISOString().slice(0,10);
+    goals.forEach((g,idx)=>{
+      const wobble = Math.max(.35, Math.min(1.15,(amounts[g.id]||.7) + ((idx+d)%4-1.5)*.04 + (6-d)*.015));
+      if(d===0 || idx%3!==d%3){
+        logs.push({id:"l_"+Math.random().toString(36).slice(2),goalId:g.id,amount:+(g.target*wobble).toFixed(2),note:d===0?"Demo entry":"",ts:date+"T"+String(8+(idx%10)).padStart(2,"0")+":00:00"});
+      }
+    });
+  }
+  return logs;
+}
+
+function initialState(){
+  const goals=starterGoals.map(x=>({...x}));
+  return {theme:"dark",period:"day",goals,logs:seedDemoLogs(goals),notes:[],createdAt:nowISO()};
+}
+let state;
+try{ state = JSON.parse(localStorage.getItem("progressPercentState")) || initialState(); }catch{ state=initialState(); }
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const save=()=>localStorage.setItem("progressPercentState",JSON.stringify(state));
+
+function toast(msg){ const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600); }
+function modal(id,show=true){ $("#"+id).classList.toggle("show",show); }
+$$("[data-close]").forEach(b=>b.onclick=()=>modal(b.dataset.close,false));
+
+function periodDays(period){
+  return {day:1,week:7,month:30,year:365}[period]||1;
+}
+function startDate(period){
+  const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(periodDays(period)-1)); return d;
+}
+function goalProgress(goal, period=state.period){
+  const from=startDate(period), days=periodDays(period), target=goal.target*days;
+  const sum=state.logs.filter(l=>l.goalId===goal.id && new Date(l.ts)>=from).reduce((a,b)=>a+Number(b.amount),0);
+  return {sum,target,pct:target?Math.min(100,(sum/target)*100):0};
+}
+function catProgress(cat){
+  const goals=state.goals.filter(g=>g.cat===cat);
+  if(!goals.length) return {pct:0,done:0,target:0};
+  let w=0,s=0,done=0,target=0;
+  goals.forEach(g=>{const p=goalProgress(g); const wt=Number(g.weight)||1; s+=p.pct*wt;w+=wt;done+=p.sum;target+=p.target;});
+  return {pct:w?s/w:0,done,target};
+}
+function overall(){
+  const active=Object.keys(CATS).filter(c=>state.goals.some(g=>g.cat===c));
+  if(!active.length)return 0;
+  return active.reduce((a,c)=>a+catProgress(c).pct,0)/active.length;
+}
+function logsOn(dateKey){return state.logs.filter(l=>l.ts.slice(0,10)===dateKey)}
+function computeStreak(){
+  let n=0;const d=new Date();
+  while(true){const k=d.toISOString().slice(0,10);if(logsOn(k).length){n++;d.setDate(d.getDate()-1)}else break}
+  return n;
+}
+function onePercentScore(){
+  const t=overall();
+  const y=new Date();y.setDate(y.getDate()-1);const k=y.toISOString().slice(0,10);
+  const hasYesterday=state.logs.some(l=>l.ts.slice(0,10)===k);
+  if(!hasYesterday) return Math.round(t);
+  const currentPeriod=state.period; state.period="day";
+  const todays=overall();
+  const keep=state.logs;
+  state.logs=keep.filter(l=>l.ts.slice(0,10)===k);
+  const yPct=overall();
+  state.logs=keep; state.period=currentPeriod;
+  return Math.round((todays-yPct)*10)/10;
+}
+function unitLabel(v){ if(v>=1000)return Math.round(v).toLocaleString(); return Number(v.toFixed ? v.toFixed(1) : v).toLocaleString(); }
+
+function render(){
+  document.body.dataset.theme=state.theme;
+  $("#themeBtn").textContent=state.theme==="dark"?"☀️ Light":"🌙 Dark";
+  $$("#periodTabs button").forEach(b=>b.classList.toggle("active",b.dataset.period===state.period));
+  const o=overall();
+  $("#overallPct").textContent=Math.round(o)+"%";$("#overallRing").style.setProperty("--p",o);
+  $("#streak").textContent=computeStreak()+"d";
+  $("#unitsToday").textContent=Math.round(logsOn(todayKey()).reduce((a,b)=>a+Number(b.amount),0)).toLocaleString();
+  const op=onePercentScore();$("#onePercent").textContent=(op>0?"+":"")+op+"%";
+
+  const cats=Object.entries(CATS);
+  $("#categoryGrid").innerHTML=cats.map(([key,c])=>{
+    const p=catProgress(key); const goals=state.goals.filter(g=>g.cat===key);
+    const primary=goals[0];
+    return `<article class="card category">
+      <div class="cat-top">
+        <div class="cat-name"><div class="icon">${c.icon}</div><div><h4>${c.name}</h4><small>${goals.length?goals.length+" measurable goal"+(goals.length>1?"s":""):c.hint}</small></div></div>
+        <div class="pct">${Math.round(p.pct)}%</div>
+      </div>
+      <div class="bar"><i style="width:${Math.min(100,p.pct)}%"></i></div>
+      <div class="unit-line"><span>${primary?`${unitLabel(goalProgress(primary).sum)} / ${unitLabel(goalProgress(primary).target)} ${primary.unit}`:"No goal yet"}</span><span>${state.period}</span></div>
+      <div class="quick">
+        ${primary?`<button onclick="quickAdd('${primary.id}',${primary.quick})">+${primary.quick} ${primary.unit}</button><button onclick="openLog('${primary.id}')">Log</button><button onclick="editGoal('${primary.id}')">Edit</button>`:`<button onclick="newGoal('${key}')">+ Add smallest unit</button>`}
+      </div>
+    </article>`;
+  }).join("");
+
+  renderLogs(); drawChart(); renderCoach();
+}
+function renderLogs(){
+  const recent=[...state.logs].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,12);
+  const notes=[...state.notes].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,4).map(n=>({...n,isNote:true}));
+  const all=[...recent,...notes].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,12);
+  $("#logList").innerHTML=all.length?all.map(l=>{
+    if(l.isNote)return `<div class="log-item"><span class="dot" style="background:var(--accent2)"></span><div><b>Life note</b><small>${escapeHtml(l.text)}</small></div><em>${new Date(l.ts).toLocaleDateString()}</em></div>`;
+    const g=state.goals.find(x=>x.id===l.goalId);
+    return `<div class="log-item"><span class="dot"></span><div><b>${g?escapeHtml(g.name):"Deleted goal"}</b><small>${l.note?escapeHtml(l.note):new Date(l.ts).toLocaleString()}</small></div><em>+${unitLabel(Number(l.amount))}${g?" "+escapeHtml(g.unit):""}</em></div>`;
+  }).join(""):`<div class="empty">No units logged yet.</div>`;
+}
+function drawChart(){
+  const canvas=$("#trendCanvas"),ctx=canvas.getContext("2d");
+  const w=canvas.width,h=canvas.height,pad=46;
+  ctx.clearRect(0,0,w,h);
+  const css=getComputedStyle(document.body), muted=css.getPropertyValue("--muted").trim(), line=css.getPropertyValue("--line").trim(), accent=css.getPropertyValue("--accent").trim(), panel=css.getPropertyValue("--panel").trim();
+  ctx.strokeStyle=line;ctx.fillStyle=muted;ctx.lineWidth=1;ctx.font="12px system-ui";
+  [0,25,50,75,100].forEach(v=>{const y=h-pad-(v/100)*(h-pad*1.4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-18,y);ctx.stroke();ctx.fillText(v+"%",7,y+4)});
+  const vals=[];
+  const keepLogs=state.logs, keepPeriod=state.period;
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);
+    state.logs=keepLogs.filter(l=>l.ts.slice(0,10)===k); state.period="day";
+    vals.push({k,label:d.toLocaleDateString(undefined,{weekday:"short"}),v:overall()});
+  }
+  state.logs=keepLogs;state.period=keepPeriod;
+  const usable=w-pad-30, step=usable/6;
+  ctx.beginPath();ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.lineJoin="round";ctx.lineCap="round";
+  vals.forEach((p,i)=>{const x=pad+i*step,y=h-pad-(p.v/100)*(h-pad*1.4);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+  vals.forEach((p,i)=>{const x=pad+i*step,y=h-pad-(p.v/100)*(h-pad*1.4);ctx.beginPath();ctx.fillStyle=panel;ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=muted;ctx.fillText(p.label,x-11,h-13)});
+}
+function renderCoach(){
+  const scores=Object.keys(CATS).map(c=>({c,p:catProgress(c).pct})).filter(x=>state.goals.some(g=>g.cat===x.c)).sort((a,b)=>a.p-b.p);
+  if(!scores.length)return;
+  const low=scores[0],name=CATS[low.c].name;
+  $("#coachTitle").textContent=low.p<60?`${name} has the most leverage today.`:`You are building balanced momentum.`;
+  $("#coachText").textContent=low.p<60?`A single smallest-unit action in ${name.toLowerCase()} can lift your whole-life percentage.`:`Protect the streak. Add one meaningful unit to your weakest category before the day ends.`;
+}
+function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+window.quickAdd=(id,amt)=>{state.logs.push({id:"l_"+Date.now(),goalId:id,amount:Number(amt),note:"Quick add",ts:nowISO()});save();render();toast("Progress logged");}
+window.openLog=id=>{const g=state.goals.find(x=>x.id===id);if(!g)return;$("#logGoalId").value=id;$("#logGoalName").value=g.name;$("#logAmount").value=g.quick;$("#logNote").value="";modal("logModal")}
+window.newGoal=cat=>{resetGoalForm();$("#goalCategory").value=cat;modal("goalModal")}
+window.editGoal=id=>{const g=state.goals.find(x=>x.id===id);if(!g)return;$("#goalId").value=g.id;$("#goalCategory").value=g.cat;$("#goalName").value=g.name;$("#goalUnit").value=g.unit;$("#goalTarget").value=g.target;$("#goalQuick").value=g.quick;$("#goalWeight").value=g.weight||1;$("#goalWhy").value=g.why||"";$("#goalModalTitle").textContent="Edit measurable goal";$("#deleteGoalBtn").style.display="inline-block";modal("goalModal")}
+
+function resetGoalForm(){
+  $("#goalForm").reset();$("#goalId").value="";$("#goalWeight").value=1;$("#goalModalTitle").textContent="Add a measurable goal";$("#deleteGoalBtn").style.display="none";
+}
+$("#goalCategory").innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+$("#addGoalBtn").onclick=()=>{resetGoalForm();modal("goalModal")};
+$("#themeBtn").onclick=()=>{state.theme=state.theme==="dark"?"light":"dark";save();render()};
+$("#periodTabs").onclick=e=>{if(e.target.dataset.period){state.period=e.target.dataset.period;save();render()}};
+$("#goalForm").onsubmit=e=>{
+  e.preventDefault();const id=$("#goalId").value||"g_"+Date.now();
+  const g={id,cat:$("#goalCategory").value,name:$("#goalName").value.trim(),unit:$("#goalUnit").value.trim(),target:Number($("#goalTarget").value),quick:Number($("#goalQuick").value),weight:Number($("#goalWeight").value)||1,why:$("#goalWhy").value.trim()};
+  const ix=state.goals.findIndex(x=>x.id===id); if(ix>=0)state.goals[ix]=g;else state.goals.push(g);
+  save();modal("goalModal",false);render();toast(ix>=0?"Goal updated":"Goal added");
+};
+$("#deleteGoalBtn").onclick=()=>{
+  const id=$("#goalId").value;if(!id)return;
+  if(confirm("Delete this goal? Existing history for it will remain in the raw export.")){state.goals=state.goals.filter(g=>g.id!==id);save();modal("goalModal",false);render();toast("Goal deleted")}
+};
+$("#logForm").onsubmit=e=>{
+  e.preventDefault();state.logs.push({id:"l_"+Date.now(),goalId:$("#logGoalId").value,amount:Number($("#logAmount").value),note:$("#logNote").value.trim(),ts:nowISO()});
+  save();modal("logModal",false);render();toast("Unit logged");
+};
+$("#noteBtn").onclick=()=>{ $("#noteText").value="";modal("noteModal") };
+$("#noteForm").onsubmit=e=>{e.preventDefault();state.notes.push({id:"n_"+Date.now(),text:$("#noteText").value.trim(),ts:nowISO(),isNote:true});save();modal("noteModal",false);render();toast("Note saved")};
+$("#exportBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="progress-percent-backup-"+todayKey()+".json";a.click();URL.revokeObjectURL(url);toast("Backup exported");
+};
+window.addEventListener("resize",drawChart);
+render();
+</script>
+</body>
+</html>
