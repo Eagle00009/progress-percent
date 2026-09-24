@@ -1,458 +1,139 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0b1020" />
-<title>Progress % — Measure Life in the Smallest Unit</title>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#4255dc"><meta name="description" content="Your weekly progress, daily health journal, and lifetime time budget."><title>Progress % · Your life, in perspective</title>
 <style>
-  :root{
-    --bg:#f5f7fb; --panel:#ffffff; --panel2:#f0f3f9; --text:#111827; --muted:#6b7280;
-    --line:#e5e7eb; --accent:#6d5dfc; --accent2:#24c8a5; --danger:#ef4444;
-    --shadow:0 18px 55px rgba(17,24,39,.10); --radius:22px;
-  }
-  [data-theme="dark"]{
-    --bg:#080d19; --panel:#111827; --panel2:#182235; --text:#f8fafc; --muted:#94a3b8;
-    --line:#263247; --accent:#8b7cff; --accent2:#36d7b4; --danger:#fb7185;
-    --shadow:0 22px 65px rgba(0,0,0,.32);
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background:
-      radial-gradient(circle at 10% 0%, rgba(109,93,252,.12), transparent 28%),
-      radial-gradient(circle at 100% 20%, rgba(36,200,165,.10), transparent 24%), var(--bg);
-    color:var(--text); min-height:100vh;
-  }
-  button,input,select,textarea{font:inherit}
-  button{cursor:pointer}
-  .app{max-width:1440px;margin:auto;padding:22px}
-  .topbar{
-    display:flex;gap:18px;align-items:center;justify-content:space-between;margin-bottom:22px;position:sticky;top:0;z-index:20;
-    padding:14px 16px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--bg) 78%,transparent);
-    backdrop-filter:blur(18px);border-radius:24px;
-  }
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--shadow)}
-  .brand h1{font-size:18px;margin:0}.brand small{color:var(--muted)}
-  .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:700;transition:.2s}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 9px 25px rgba(0,0,0,.08)}
-  .btn.primary{background:linear-gradient(135deg,var(--accent),#7f6fff);border-color:transparent;color:#fff}
-  .btn.ghost{background:transparent}
-  .btn.danger{color:var(--danger)}
-  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-bottom:18px}
-  .card{background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .hero-main{padding:28px;position:relative;overflow:hidden}
-  .hero-main:after{content:"";position:absolute;right:-90px;top:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(109,93,252,.25),transparent 65%)}
-  .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:900;color:var(--accent)}
-  .hero h2{font-size:clamp(28px,4vw,52px);line-height:1.03;margin:10px 0 12px;max-width:800px}
-  .hero p{color:var(--muted);max-width:740px;font-size:15px;line-height:1.65}
-  .overall-row{display:flex;gap:20px;align-items:center;margin-top:22px;flex-wrap:wrap}
-  .ring{
-    --p:0; width:150px;height:150px;border-radius:50%;display:grid;place-items:center;
-    background:conic-gradient(var(--accent) calc(var(--p)*1%), color-mix(in srgb,var(--line) 78%,transparent) 0);
-    position:relative;flex:0 0 auto
-  }
-  .ring:before{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--panel)}
-  .ring strong,.ring span{position:relative;z-index:2}.ring strong{font-size:34px}.ring span{font-size:12px;color:var(--muted);display:block;text-align:center}
-  .mini-stats{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:10px;flex:1}
-  .mini{padding:13px;border-radius:16px;background:var(--panel2)} .mini b{display:block;font-size:20px}.mini span{color:var(--muted);font-size:12px}
-  .philosophy{padding:24px;display:flex;flex-direction:column;justify-content:space-between}
-  .quote{font-size:21px;line-height:1.4;font-weight:800}
-  .quote span{color:var(--accent)}
-  .unit-chain{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:18px}
-  .pill{padding:7px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:12px;font-weight:700}
-  .arrow{color:var(--muted)}
-  .section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:26px 2px 12px}
-  .section-head h3{margin:0;font-size:22px}.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
-  .period-tabs{display:flex;gap:6px;flex-wrap:wrap}.period-tabs button{padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font-weight:800}
-  .period-tabs button.active{background:var(--text);color:var(--bg)}
-  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-  .category{padding:18px;transition:.2s;position:relative;overflow:hidden}
-  .category:hover{transform:translateY(-2px)}
-  .cat-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .cat-name{display:flex;gap:10px;align-items:center}.icon{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:var(--panel2);font-size:20px}
-  .cat-name h4{margin:0;font-size:16px}.cat-name small{color:var(--muted)}
-  .pct{font-size:26px;font-weight:900}
-  .bar{height:9px;border-radius:999px;background:var(--panel2);overflow:hidden;margin:14px 0 9px}
-  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.35s}
-  .unit-line{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
-  .quick{display:flex;gap:7px;margin-top:14px}
-  .quick button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:8px;font-weight:800}
-  .quick button:hover{border-color:var(--accent)}
-  .lower{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:18px}
-  .chart-card,.log-card{padding:20px}
-  canvas{width:100%;height:220px;display:block}
-  .log-list{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow:auto;padding-right:4px}
-  .log-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--panel2)}
-  .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-  .log-item b{font-size:13px}.log-item small{display:block;color:var(--muted);margin-top:2px}.log-item em{font-style:normal;font-weight:900;font-size:12px}
-  .insight{margin-top:16px;padding:15px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--panel)),color-mix(in srgb,var(--accent2) 10%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line))}
-  .insight b{display:block;margin-bottom:4px}.insight span{font-size:13px;color:var(--muted)}
-  .footer{padding:30px 3px 60px;color:var(--muted);font-size:12px;text-align:center}
-  .modal{position:fixed;inset:0;z-index:60;background:rgba(3,7,18,.62);display:none;place-items:center;padding:18px;backdrop-filter:blur(10px)}
-  .modal.show{display:grid}
-  .modal-box{width:min(640px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
-  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h3{margin:0}
-  .x{border:0;background:var(--panel2);color:var(--text);width:38px;height:38px;border-radius:12px;font-size:18px}
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin:0 0 6px}
-  input,select,textarea{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:11px;outline:none}
-  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-  textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}
-  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
-  .empty{padding:28px;text-align:center;color:var(--muted)}
-  .toast{position:fixed;right:22px;bottom:22px;background:var(--text);color:var(--bg);padding:12px 16px;border-radius:14px;font-weight:800;box-shadow:var(--shadow);opacity:0;transform:translateY(15px);pointer-events:none;transition:.25s;z-index:90}
-  .toast.show{opacity:1;transform:translateY(0)}
-  @media(max-width:1000px){.hero,.lower{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:680px){
-    .app{padding:10px}.topbar{top:6px;border-radius:18px}.brand small{display:none}.top-actions .hide-mobile{display:none}
-    .hero-main,.philosophy,.chart-card,.log-card{padding:17px}.grid{grid-template-columns:1fr}.mini-stats{grid-template-columns:repeat(3,1fr)}
-    .ring{width:120px;height:120px}.ring:before{inset:10px}.ring strong{font-size:27px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}
-    .hero h2{font-size:34px}.section-head{align-items:flex-start;flex-direction:column}
-  }
-</style>
-</head>
-<body data-theme="dark">
-<div class="app">
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">%</div>
-      <div><h1>Progress %</h1><small>Measure the smallest unit. Improve the whole life.</small></div>
-    </div>
-    <div class="top-actions">
-      <button class="btn ghost hide-mobile" id="themeBtn">☀️ Light</button>
-      <button class="btn" id="exportBtn">Export</button>
-      <button class="btn primary" id="addGoalBtn">+ Add goal</button>
-    </div>
-  </header>
+:root{--bg:#f3f5fa;--paper:#fff;--ink:#19233a;--muted:#5d687d;--line:#e1e6ef;--blue:#4255dc;--tint:#edf0ff;--green:#15756d;--red:#ac3b4c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Segoe UI",system-ui,sans-serif}button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-action:manipulation}button,.button{border:1px solid var(--line);border-radius:9px;background:var(--paper);padding:10px 16px;color:var(--ink);cursor:pointer;text-decoration:none;font-weight:600}button:hover,.button:hover{border-color:var(--blue);color:var(--blue)}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button:disabled{opacity:.4;cursor:default}a{color:var(--blue)}:focus-visible{outline:3px solid #f0ad45;outline-offset:3px}h1,h2,h3,p{margin:0}h1{font-size:30px;letter-spacing:-1px}h2{font-size:19px;letter-spacing:-.3px}h3{font-size:16px}small,.small{font-size:14px}.muted{color:var(--muted)}.eyebrow{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;font-weight:700;color:var(--muted)}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}.sidebar{background:var(--paper);border-right:1px solid var(--line);padding:28px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:30px}.brand{font-size:22px;font-weight:750;letter-spacing:-.8px}.brand b{background:var(--blue);color:white;padding:4px 10px;border-radius:10px;margin-right:8px}.sidebar nav{display:grid;gap:8px}.sidebar nav button{text-align:left;border-color:transparent;font-size:15px;padding:12px}.sidebar nav button.active{background:var(--tint);color:var(--blue)}.sidefoot{margin-top:auto;font-size:14px;color:var(--muted)}main{max-width:1450px;width:100%;padding:32px 38px;margin:auto}.top,.row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.top{margin-bottom:25px}.actions{display:flex;gap:9px;flex-wrap:wrap}.card{padding:24px;background:var(--paper);border:1px solid var(--line);border-radius:14px}.grid{display:grid;gap:18px}.two{grid-template-columns:1.4fr 1fr}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.four{grid-template-columns:repeat(4,minmax(0,1fr))}.stack>*+*{margin-top:20px}.kpi{font-size:36px;font-weight:700;letter-spacing:-1.3px;line-height:1.2;margin:14px 0 7px}.highlight{background:var(--blue);color:white}.highlight .muted,.highlight .eyebrow{color:#e0e5ff}.tag{font-size:13px;font-weight:600;display:inline-block;padding:4px 9px;background:var(--tint);color:var(--blue);border-radius:6px}.positive{color:var(--green)}.negative{color:var(--red)}.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{height:100%;display:block;background:var(--blue);border-radius:6px}.metric{padding:16px 0;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}.big{font-size:24px;font-weight:700}.chart{display:flex;align-items:flex-end;gap:14px;height:215px;padding-top:28px;margin:12px 0}.column{flex:1;text-align:center;min-width:0}.column .bars{height:145px;display:flex;align-items:flex-end;justify-content:center;gap:4px}.column i{display:block;width:15px;max-width:40%;border-radius:4px 4px 0 0;background:var(--blue)}.column i.prev{background:#bac3ed}.column span{font-size:13px;color:var(--muted)}.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--muted)}.legend i{width:10px;height:10px;display:inline-block;margin-right:6px;border-radius:2px;background:var(--blue)}.note{background:var(--tint);border-left:3px solid var(--blue);padding:14px 16px;border-radius:4px;font-size:14px;color:var(--muted)}.empty{padding:38px 18px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--ink);font-size:20px;margin-bottom:8px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left;white-space:nowrap;font-size:14px}th{color:var(--muted);font-weight:600}td,th{padding:13px 12px;border-bottom:1px solid var(--line)}td:first-child,th:first-child{padding-left:0}td small{display:block}label{display:grid;gap:6px;font-size:14px;font-weight:600}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);padding:10px 12px;min-width:0}input[type=checkbox]{width:18px;height:18px}textarea{min-height:90px;resize:vertical}.check{display:flex;align-items:flex-start;gap:10px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.full{grid-column:1/-1}fieldset{border:0;padding:0;margin:24px 0}legend{font-size:18px;font-weight:650;margin-bottom:12px}.banner{padding:12px 16px;background:#fff3d9;color:#71511f;border-radius:8px;margin-bottom:20px}.hidden,[hidden]{display:none!important}.timeline{display:flex;width:100%;height:32px;border-radius:7px;overflow:hidden;margin:20px 0}.timeline i{height:100%}.lifegrid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:18px 0}.lifegrid i{aspect-ratio:1;border-radius:4px;background:var(--line)}.lifegrid i.spent{background:var(--blue)}.error{color:var(--red);font-weight:600;white-space:pre-wrap}.status{position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:10px;box-shadow:0 5px 20px #0002;z-index:50;max-width:90vw}.break{overflow-wrap:anywhere;white-space:pre-wrap}.foot{padding:25px 0;font-size:13px;color:var(--muted)}.toolbar{margin-bottom:18px}.toolbar input{width:auto}.ring{height:120px;width:120px;flex-shrink:0;border-radius:50%;background:conic-gradient(var(--blue) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center}.ring>div{border-radius:50%;width:94px;height:94px;background:var(--paper);display:grid;place-items:center;font-size:23px;font-weight:700}.dark{--bg:#11182a;--paper:#1b2539;--ink:#edf2ff;--muted:#b5c0d6;--line:#334057;--blue:#8b9bff;--tint:#293354;--green:#71d3be;--red:#ff98a9}.dark .highlight{background:#4255dc}.dark .banner{background:#473b27;color:#ffe3af}
+@media(max-width:1100px){main{padding:25px}.four{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:760px){.layout{display:block}.sidebar{position:static;height:auto;padding:16px;gap:16px;border-right:0;border-bottom:1px solid var(--line)}.sidebar nav{display:flex;overflow-x:auto;gap:4px}.sidebar nav button{white-space:nowrap;padding:8px}.sidefoot{display:none}main{padding:20px 15px}.three,.formgrid{grid-template-columns:1fr}.card{padding:19px}.kpi{font-size:30px}.top{align-items:flex-start}h1{font-size:27px}.full{grid-column:auto}.chart{gap:6px}.toolbar input{width:100%}}
+@media print{.sidebar,.actions,button,.banner,.foot{display:none!important}.layout{display:block}main{padding:0;max-width:none}.card{break-inside:avoid}.two{grid-template-columns:1fr}.four{grid-template-columns:repeat(4,1fr)}}
+</style></head>
+<body><div class="layout"><aside class="sidebar"><div class="brand"><b>%</b> Progress</div><div><div class="eyebrow" style="margin:0 12px 12px">Your personal report</div><nav aria-label="Main navigation"><button data-view="dashboard" class="active">◫ &nbsp; Overview</button><button data-view="journal">＋ &nbsp; Daily journal</button><button data-view="lifetime">◷ &nbsp; Lifetime</button><button data-view="health">♡ &nbsp; Sleep &amp; body</button><button data-view="settings">⚙ &nbsp; Profile &amp; goals</button></nav></div><div class="sidefoot"><p>Small actions.<br>Measurable progress.</p><hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><p>Saved in this browser.<br>No account or device sync.</p><a href="legacy.html">Original tracker</a></div></aside>
+<main><header class="top"><div><div class="eyebrow" id="todayLabel"></div><h1 id="pageTitle">Weekly overview</h1></div><div class="actions"><button id="demoBtn">Explore demo</button><button id="themeBtn" aria-label="Toggle colour theme">◐</button><button class="primary" id="logBtn">+ Log your day</button></div></header><div id="demoBanner" class="banner" hidden>Demo mode · All numbers are illustrative. Changes here are temporary. Exit demo to track your own life.</div><div id="storageError" class="banner" hidden></div>
+<section id="dashboard" class="stack"></section>
+<section id="journal" hidden><div class="grid two"><article class="card"><div class="row"><h2>Daily check-in</h2><span class="tag">One day, 86,400 seconds</span></div><p class="muted small">Blank means unknown. Enter zero for a measured zero. Select a date to edit that day's entry.</p><form id="dayForm"><fieldset><label>Date<input type="date" id="entryDate" required></label></fieldset><fieldset><legend>Where did your day go?</legend><p class="muted small" style="margin-bottom:15px">Use HH:MM:SS. Count activities once, even when they overlap. Walking distance is separate from walking time.</p><div id="timeInputs" class="formgrid"></div><p id="dayBudget" class="note" style="margin-top:14px"></p></fieldset><fieldset><legend>Sleep stages</legend><p class="muted small" style="margin-bottom:15px">Optional values from your sleep device or diary. These are parts of total sleep, not extra time.</p><div id="stageInputs" class="formgrid"></div></fieldset><fieldset><legend>Movement &amp; health journal</legend><div class="formgrid"><label>Steps<input id="steps" type="number" min="0" max="200000" step="1"></label><label>Walking distance (metres)<input id="distance" type="number" min="0" max="1000000" step="1"></label><label>Weight (kg)<input id="weight" type="number" min="0.001" max="1000" step="0.001"></label><label>Height (cm)<input id="height" type="number" min="0.1" max="300" step="0.1"></label><label>How do you feel? (0–10)<input id="wellbeing" type="number" min="0" max="10" step="0.1"></label></div></fieldset><fieldset><legend>Your other goals</legend><div id="customInputs" class="formgrid"></div></fieldset><fieldset><label>Reflection / health notes<textarea id="note" maxlength="5000" placeholder="Energy, symptoms, habits, or something worth remembering"></textarea></label></fieldset><label class="check"><input type="checkbox" id="complete"><span>This is a finished day's time log.<br><span class="muted" style="font-weight:400">Include it in lifetime projections. Blank time categories count as zero; leftover time remains unallocated.</span></span></label><p id="formError" class="error" role="alert"></p><div class="actions" style="margin-top:20px"><button class="primary" type="submit">Save daily entry</button><button type="button" id="clearDraft">Clear form</button></div></form></article><aside class="stack"><article class="card"><h2>Your recent entries</h2><p class="muted small">Open any date to make a correction.</p><div id="recentEntries"></div></article><article class="card"><h2>Measured, not guessed</h2><p class="muted">Time is stored in seconds, weight in grams, height in millimetres, distance in metres, and steps as whole counts. Your measurement device determines the real accuracy.</p></article></aside></div></section>
+<section id="lifetime" class="stack" hidden></section><section id="health" class="stack" hidden></section>
+<section id="settings" hidden><div class="grid two"><article class="card"><h2>Your profile &amp; daily targets</h2><p class="muted small">Targets are personal preferences, not medical recommendations. New targets apply to new dates; existing entries keep their original targets.</p><form id="profileForm"><fieldset class="formgrid"><label>Current age (years)<input id="age" type="number" min="0" max="120" step="0.01" placeholder="Enter your age"></label><label>Planning lifespan (years)<input id="lifespan" type="number" min="1" max="130" step="1" required></label><label>Sleep target (hours/day)<input id="targetSleep" type="number" min="0.01" max="24" step="0.01" required></label><label>Steps target (per day)<input id="targetSteps" type="number" min="1" max="200000" step="1" required></label><label>Distance target (metres/day)<input id="targetDistance" type="number" min="1" max="1000000" step="1" required></label><label>Work target (hours/day)<input id="targetWork" type="number" min="0.01" max="24" step="0.01" required></label><label>Family target (hours/day)<input id="targetFamily" type="number" min="0.01" max="24" step="0.01" required></label></fieldset><p id="profileError" class="error" role="alert"></p><button class="primary">Save profile</button></form></article><aside class="stack"><article class="card"><h2>Track anything else</h2><p class="muted small">For example pages, repetitions, rupees saved, or minutes learning. Each goal gets its own percentage.</p><form id="goalForm" class="stack" style="margin-top:15px"><label>Goal name<input id="goalName" maxlength="80" required placeholder="Reading"></label><label>Unit<input id="goalUnit" maxlength="30" required placeholder="pages"></label><label>Daily target<input id="goalTarget" type="number" min="0.001" max="1000000000" step="any" required></label><button>Add custom goal</button></form><div id="goalList"></div></article><article class="card"><h2>Your data</h2><p class="muted small">Entries stay in this browser and are not sent to GitHub. Back up before clearing browser data or changing devices. Restore merges dates, replacing matching dates after confirmation.</p><div class="actions" style="margin-top:15px"><button id="exportBtn">Export backup</button><button id="importBtn">Restore backup</button><button id="printBtn">Print report</button></div><input id="importFile" type="file" accept="application/json,.json" hidden><p id="backupError" class="error" role="alert"></p><p class="small" style="margin-top:15px">Your previous tracker and its browser data are preserved in the <a href="legacy.html">original tracker</a>.</p></article></aside></div></section>
+<footer class="foot">Progress % · A personal tracking tool. Percentages describe your targets and time allocation; they do not measure medical health or predict your lifespan.</footer></main></div><div id="status" role="status" class="status" hidden></div><script>
 
-  <section class="hero">
-    <article class="card hero-main">
-      <div class="eyebrow">Your life dashboard</div>
-      <h2>Progress becomes real when you can <span style="color:var(--accent)">count it.</span></h2>
-      <p>Track your life from the bottom up: one minute, one rep, one page, one check-in, one rupee, one meaningful action. Every smallest unit rolls up into a percentage you can improve.</p>
-      <div class="overall-row">
-        <div class="ring" id="overallRing" style="--p:0">
-          <div><strong id="overallPct">0%</strong><span>overall progress</span></div>
-        </div>
-        <div class="mini-stats">
-          <div class="mini"><b id="onePercent">0</b><span>1% better score</span></div>
-          <div class="mini"><b id="streak">0d</b><span>logging streak</span></div>
-          <div class="mini"><b id="unitsToday">0</b><span>units logged today</span></div>
-        </div>
-      </div>
-    </article>
-
-    <aside class="card philosophy">
-      <div>
-        <div class="eyebrow">The operating principle</div>
-        <div class="quote">“Track progress in <span>percentage</span>. Track action in the <span>smallest useful unit</span>.”</div>
-      </div>
-      <div>
-        <div class="unit-chain">
-          <span class="pill">1 unit</span><span class="arrow">→</span>
-          <span class="pill">Goal</span><span class="arrow">→</span>
-          <span class="pill">Category</span><span class="arrow">→</span>
-          <span class="pill">Life %</span>
-        </div>
-        <div class="insight"><b id="coachTitle">Start with one unit.</b><span id="coachText">Logging something tiny today is more useful than planning something perfect tomorrow.</span></div>
-      </div>
-    </aside>
-  </section>
-
-  <div class="section-head">
-    <div><h3>Your progress system</h3><p>Each card converts a real-world unit into a percentage.</p></div>
-    <div class="period-tabs" id="periodTabs">
-      <button data-period="day" class="active">Day</button>
-      <button data-period="week">Week</button>
-      <button data-period="month">Month</button>
-      <button data-period="year">Year</button>
-    </div>
-  </div>
-
-  <section class="grid" id="categoryGrid"></section>
-
-  <section class="lower">
-    <article class="card chart-card">
-      <div class="section-head" style="margin:0 0 8px">
-        <div><h3>Progress trend</h3><p>Your percentage over the latest seven logged days.</p></div>
-      </div>
-      <canvas id="trendCanvas" width="900" height="300"></canvas>
-    </article>
-    <aside class="card log-card">
-      <div class="section-head" style="margin:0 0 12px">
-        <div><h3>Recent units</h3><p>Every small action leaves a record.</p></div>
-        <button class="btn" id="noteBtn">+ Note</button>
-      </div>
-      <div class="log-list" id="logList"></div>
-    </aside>
-  </section>
-
-  <div class="footer">Progress % MVP • Data is stored locally in this browser. Built for fast daily logging and later app migration.</div>
-</div>
-
-<div class="modal" id="goalModal">
-  <div class="modal-box">
-    <div class="modal-head"><h3 id="goalModalTitle">Add a measurable goal</h3><button class="x" data-close="goalModal">×</button></div>
-    <form id="goalForm">
-      <input type="hidden" id="goalId" />
-      <div class="form-grid">
-        <div><label>Category</label><select id="goalCategory"></select></div>
-        <div><label>Goal name</label><input id="goalName" required placeholder="Read technical material" /></div>
-        <div><label>Smallest unit</label><input id="goalUnit" required placeholder="pages" /></div>
-        <div><label>Target per day</label><input id="goalTarget" type="number" min="0.01" step="0.01" required placeholder="20" /></div>
-        <div><label>Quick add amount</label><input id="goalQuick" type="number" min="0.01" step="0.01" required placeholder="1" /></div>
-        <div><label>Weight in category</label><input id="goalWeight" type="number" min="1" max="100" step="1" required value="1" /></div>
-        <div class="full"><label>Why this matters</label><textarea id="goalWhy" placeholder="A short reason that keeps the metric meaningful."></textarea></div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn danger" id="deleteGoalBtn" style="display:none">Delete</button>
-        <button type="button" class="btn" data-close="goalModal">Cancel</button>
-        <button class="btn primary" type="submit">Save goal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="modal" id="logModal">
-  <div class="modal-box">
-    <div class="modal-head"><h3>Log a unit</h3><button class="x" data-close="logModal">×</button></div>
-    <form id="logForm">
-      <input type="hidden" id="logGoalId" />
-      <div class="form-grid">
-        <div><label>Goal</label><input id="logGoalName" disabled /></div>
-        <div><label>Amount</label><input id="logAmount" type="number" step="0.01" required /></div>
-        <div class="full"><label>Optional note</label><textarea id="logNote" placeholder="What happened?"></textarea></div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn" data-close="logModal">Cancel</button>
-        <button class="btn primary" type="submit">Log progress</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="modal" id="noteModal">
-  <div class="modal-box">
-    <div class="modal-head"><h3>Add a life note</h3><button class="x" data-close="noteModal">×</button></div>
-    <form id="noteForm">
-      <div><label>Reflection / observation</label><textarea id="noteText" required placeholder="What did you notice about yourself today?"></textarea></div>
-      <div class="modal-actions"><button type="button" class="btn" data-close="noteModal">Cancel</button><button class="btn primary">Save note</button></div>
-    </form>
-  </div>
-</div>
-
-<div class="toast" id="toast">Saved</div>
-
-<script>
-const CATS = {
-  sleep:{name:"Sleep",icon:"🌙",hint:"minutes"},
-  learning:{name:"Learning",icon:"🧠",hint:"minutes / pages"},
-  fitness:{name:"Fitness",icon:"🏃",hint:"reps / steps / minutes"},
-  emotions:{name:"Emotions",icon:"🫶",hint:"check-ins"},
-  work:{name:"Work / Career",icon:"💼",hint:"tasks / deliverables"},
-  money:{name:"Money",icon:"₹",hint:"rupees / actions"},
-  relationships:{name:"Relationships",icon:"🤝",hint:"meaningful actions"},
-  habits:{name:"Habits / Discipline",icon:"⚡",hint:"repetitions"},
-  other:{name:"Everything Else",icon:"✨",hint:"custom units"}
-};
-
-const starterGoals = [
-  {id:"g_sleep",cat:"sleep",name:"Sleep",unit:"minutes",target:480,quick:30,weight:1,why:"Protect energy and recovery."},
-  {id:"g_learn",cat:"learning",name:"Focused learning",unit:"minutes",target:60,quick:15,weight:1,why:"Compound knowledge every day."},
-  {id:"g_pages",cat:"learning",name:"Read",unit:"pages",target:20,quick:5,weight:1,why:"Turn ideas into a countable input."},
-  {id:"g_fit",cat:"fitness",name:"Movement",unit:"minutes",target:45,quick:10,weight:1,why:"Build physical capacity."},
-  {id:"g_steps",cat:"fitness",name:"Walking",unit:"steps",target:8000,quick:1000,weight:1,why:"Keep baseline movement high."},
-  {id:"g_emotion",cat:"emotions",name:"Emotion check-in",unit:"check-ins",target:3,quick:1,weight:1,why:"Notice before reacting."},
-  {id:"g_work",cat:"work",name:"High-value work",unit:"focus blocks",target:4,quick:1,weight:1,why:"Measure output, not busyness."},
-  {id:"g_money",cat:"money",name:"Money review",unit:"actions",target:1,quick:1,weight:1,why:"Keep finances visible."},
-  {id:"g_rel",cat:"relationships",name:"Meaningful connection",unit:"check-ins",target:2,quick:1,weight:1,why:"Relationships improve through attention."},
-  {id:"g_habit",cat:"habits",name:"Planned habits",unit:"repetitions",target:5,quick:1,weight:1,why:"Discipline is repeated evidence."}
-];
-
-const todayKey = () => new Date().toISOString().slice(0,10);
-const nowISO = () => new Date().toISOString();
-
-function seedDemoLogs(goals){
-  const logs=[];
-  const today=new Date();
-  const amounts={g_sleep:.88,g_learn:.75,g_pages:.55,g_fit:.9,g_steps:.72,g_emotion:.67,g_work:.75,g_money:1,g_rel:.5,g_habit:.8};
-  for(let d=6;d>=0;d--){
-    const dt=new Date(today); dt.setDate(today.getDate()-d);
-    const date=dt.toISOString().slice(0,10);
-    goals.forEach((g,idx)=>{
-      const wobble = Math.max(.35, Math.min(1.15,(amounts[g.id]||.7) + ((idx+d)%4-1.5)*.04 + (6-d)*.015));
-      if(d===0 || idx%3!==d%3){
-        logs.push({id:"l_"+Math.random().toString(36).slice(2),goalId:g.id,amount:+(g.target*wobble).toFixed(2),note:d===0?"Demo entry":"",ts:date+"T"+String(8+(idx%10)).padStart(2,"0")+":00:00"});
-      }
-    });
-  }
-  return logs;
+const DAY=86400;
+const ACTIVITIES=['sleep','work','walking','family','friends','learning','care','other'];
+const LABELS={sleep:'Sleep',work:'Work',walking:'Walking',family:'Family',friends:'Friends',learning:'Learning',care:'Personal care',other:'Miscellaneous'};
+const COLORS=['#5365e8','#1f9f9a','#e4a53c','#e276a8','#8a6edb','#549cdb','#a3acba','#687787'];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=(v,d=1)=>Number(v).toLocaleString(undefined,{maximumFractionDigits:d});
+const pct=v=>v==null?'—':num(v)+'%';
+const avg=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:null;
+const localDate=(d=new Date())=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+const shift=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return localDate(d)};
+const monday=s=>{const d=new Date(s+'T12:00:00');return shift(s,-((d.getDay()+6)%7))};
+const duration=s=>{if(s==null)return '';return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':')};
+function parseDuration(v){if(v.trim()==='')return null;if(!/^\d{1,2}:[0-5]\d:[0-5]\d$/.test(v))throw Error('Use HH:MM:SS for durations, for example 08:00:00.');const p=v.split(':').map(Number);const s=p[0]*3600+p[1]*60+p[2];if(s>DAY)throw Error('A duration cannot exceed 24 hours.');return s}
+function normal(value,target){return value==null||!target?null:Math.min(100,100*value/target)}
+function scores(r){return [['sleep',r.time.sleep,r.targets.sleep],['steps',r.steps,r.targets.steps],['distance',r.distance,r.targets.distance],['work',r.time.work,r.targets.work],['family',r.time.family,r.targets.family],...r.custom.map(x=>[x.id,x.value,x.target])].map(([id,v,t])=>({id,p:normal(v,t)}))}
+function score(r){return avg(scores(r).map(x=>x.p).filter(x=>x!=null))}
+function difference(current,previous){return current==null||previous==null?null:current-previous}
+function weekSummary(records,start,end){const rows=records.filter(r=>r.date>=start&&r.date<=end);return {rows,score:avg(rows.map(score).filter(x=>x!=null))}}
+function projection(records,horizon){const rows=records.filter(r=>r.complete);if(!rows.length)return null;const seconds=Object.fromEntries(ACTIVITIES.map(k=>[k,avg(rows.map(r=>r.time[k]||0))]));seconds.unallocated=DAY-Object.values(seconds).reduce((a,b)=>a+b,0);return Object.entries(seconds).map(([key,s])=>({key,seconds:s,percent:s/DAY*100,years:s/DAY*horizon,days:s/DAY*horizon*365.2425,totalSeconds:Math.round(s*horizon*365.2425)}))}
+function validateRecord(r){
+ if(!r||typeof r.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||localDate(new Date(r.date+'T12:00:00'))!==r.date||r.date>localDate())throw Error('Choose a valid date no later than today.');
+ const bounded=(v,max)=>v===null||(typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max);
+ if(!r.time||ACTIVITIES.some(k=>!bounded(r.time[k],DAY)||r.time[k]!==null&&!Number.isInteger(r.time[k])))throw Error('Invalid time allocation.');
+ const total=ACTIVITIES.reduce((s,k)=>s+(r.time[k]||0),0);if(total>DAY)throw Error('Activities exceed 24 hours. Count each second only once.');
+ if(!r.stages||['deep','light','rem'].some(k=>!bounded(r.stages[k],DAY)))throw Error('Invalid sleep stages.');
+ const staged=Object.values(r.stages).reduce((a,b)=>a+(b||0),0);if(staged>(r.time.sleep||0))throw Error('Sleep stages cannot exceed total sleep.');
+ if(!bounded(r.steps,200000)||r.steps!==null&&!Number.isInteger(r.steps)||!bounded(r.distance,1000000)||!bounded(r.weight,1000000)||!bounded(r.height,3000)||!bounded(r.wellbeing,10))throw Error('Check steps, distance, body measurements, and wellbeing.');
+ if(r.weight===0||r.height===0)throw Error('Height and weight must be positive, or left blank.');
+ if(!r.targets||['sleep','steps','distance','work','family'].some(k=>typeof r.targets[k]!=='number'||!Number.isFinite(r.targets[k])||r.targets[k]<=0))throw Error('Targets must be positive.');
+ if(!Array.isArray(r.custom)||r.custom.length>100||r.custom.some(x=>typeof x.id!=='string'||typeof x.name!=='string'||typeof x.unit!=='string'||!bounded(x.value,1e12)||!Number.isFinite(x.target)||x.target<=0))throw Error('Invalid custom goal.');
+ if(typeof r.complete!=='boolean'||typeof r.note!=='string'||r.note.length>5000)throw Error('Invalid daily note or completion flag.');
+ return r;
 }
 
-function initialState(){
-  const goals=starterGoals.map(x=>({...x}));
-  return {theme:"dark",period:"day",goals,logs:seedDemoLogs(goals),notes:[],createdAt:nowISO()};
-}
-let state;
-try{ state = JSON.parse(localStorage.getItem("progressPercentState")) || initialState(); }catch{ state=initialState(); }
-
+const KEY='progressPercentLifeV2';
+const blank=()=>({version:2,profile:{age:null,lifespan:70,targets:{sleep:28800,steps:8000,distance:5000,work:28800,family:3600}},goals:[],records:[]});
+let state=blank(),demo=false,realState=null,view='dashboard',weekOffset=0,readOnly=false,loadError='';
+function validateState(s){if(!s||s.version!==2||!s.profile||!Array.isArray(s.records)||s.records.length>50000||!Array.isArray(s.goals)||s.goals.length>100)throw Error('This is not a Progress % version 2 backup.');const p=s.profile;if(!Number.isFinite(p.lifespan)||p.lifespan<=0||p.lifespan>130||p.age!==null&&(!Number.isFinite(p.age)||p.age<0||p.age>=p.lifespan))throw Error('Check age and planning lifespan.');if(!p.targets||['sleep','steps','distance','work','family'].some(k=>!Number.isFinite(p.targets[k])||p.targets[k]<=0))throw Error('Invalid targets.');if(s.goals.some(g=>typeof g.id!=='string'||typeof g.name!=='string'||typeof g.unit!=='string'||!Number.isFinite(g.target)||g.target<=0)||new Set(s.goals.map(g=>g.id)).size!==s.goals.length)throw Error('Invalid goals.');s.records.forEach(validateRecord);if(new Set(s.records.map(r=>r.date)).size!==s.records.length)throw Error('Duplicate dates in backup.');return s}
+try{const saved=localStorage.getItem(KEY);if(saved)state=validateState(JSON.parse(saved))}catch(e){readOnly=true;loadError='Your saved data could not be loaded. It has not been overwritten. Export it for recovery, or restore a valid backup. '+e.message}
 const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const save=()=>localStorage.setItem("progressPercentState",JSON.stringify(state));
-
-function toast(msg){ const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600); }
-function modal(id,show=true){ $("#"+id).classList.toggle("show",show); }
-$$("[data-close]").forEach(b=>b.onclick=()=>modal(b.dataset.close,false));
-
-function periodDays(period){
-  return {day:1,week:7,month:30,year:365}[period]||1;
+const empty=(title,text)=>'<div class="empty"><strong>'+title+'</strong>'+text+'</div>';
+const bar=(p,color='var(--blue)')=>'<div class="bar"><i style="width:'+Math.min(100,Math.max(0,p||0))+'%;background:'+color+'"></i></div>';
+function toast(msg){$('#status').textContent=msg;$('#status').hidden=false;setTimeout(()=>$('#status').hidden=true,4000)}
+function persist(next){if(!demo){if(readOnly)throw Error('Storage is unavailable. Export or restore your data first.');try{localStorage.setItem(KEY,JSON.stringify(next))}catch{throw Error('Could not save. Browser storage may be full or disabled. Your form has been kept.')}}state=next}
+function show(next){view=next;document.querySelectorAll('main>section').forEach(e=>e.hidden=e.id!==view);document.querySelectorAll('[data-view]').forEach(e=>e.classList.toggle('active',e.dataset.view===view));$('#pageTitle').textContent={dashboard:'Weekly overview',journal:'Daily journal',lifetime:'A lifetime in perspective',health:'Sleep & body',settings:'Make it yours'}[view];render();window.scrollTo({top:0,behavior:'smooth'})}
+function limits(){const start=shift(monday(localDate()),weekOffset*7);const end=weekOffset===0?localDate():shift(start,6);return {start,end,prev:shift(start,-7),prevEnd:shift(end,-7),days:Math.round((new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1}}
+function rangeLabel(s,e){return new Date(s+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'})+' – '+new Date(e+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+function delta(a,b){const d=difference(a,b);return d==null?'<span class="muted">No comparable data</span>':'<span class="'+(d>=0?'positive':'negative')+'">'+(d>0?'+':'')+num(d)+' pp</span>'}
+function metric(rows,id){return avg(rows.flatMap(r=>scores(r).filter(x=>x.id===id&&x.p!=null).map(x=>x.p)))}
+function renderDashboard(){
+ const w=limits(),cur=weekSummary(state.records,w.start,w.end),prev=weekSummary(state.records,w.prev,w.prevEnd);
+ const shared=Array.from({length:w.days},(_,i)=>[cur.rows.find(r=>r.date===shift(w.start,i)),prev.rows.find(r=>r.date===shift(w.prev,i))]).filter(([a,b])=>a&&b);
+ // Compare only the same goal IDs on matched weekdays. Missing goals never masquerade as zero.
+ const paired=shared.map(([a,b])=>{const sa=scores(a),sb=scores(b);const ids=sa.filter(x=>x.p!=null&&sb.some(y=>y.id===x.id&&y.p!=null)).map(x=>x.id);return [avg(sa.filter(x=>ids.includes(x.id)).map(x=>x.p)),avg(sb.filter(x=>ids.includes(x.id)).map(x=>x.p))]}).filter(([a,b])=>a!=null&&b!=null);
+ const a=avg(paired.map(x=>x[0])),b=avg(paired.map(x=>x[1])),d=difference(a,b);
+ const covered=cur.rows.length/w.days*100,complete=cur.rows.filter(r=>r.complete).length;
+ const allMetrics=[['sleep','Sleep target'],['steps','Steps target'],['distance','Distance target'],['work','Work target'],['family','Family target'],...state.goals.map(g=>[g.id,g.name])];
+ const bars=Array.from({length:7},(_,i)=>{const now=cur.rows.find(r=>r.date===shift(w.start,i)),before=prev.rows.find(r=>r.date===shift(w.prev,i)),v=now?score(now):null,p=before?score(before):null;return '<div class="column"><div class="bars"><i class="prev" title="'+(p==null?'No previous data':pct(p))+'" style="height:'+(p||0)+'%"></i><i title="'+(v==null?'No data':pct(v))+'" style="height:'+(v||0)+'%"></i></div><span>'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]+'</span><br><span>'+pct(v)+'</span></div>'}).join('');
+ $('#dashboard').innerHTML='<div class="row toolbar"><div><span class="tag">'+(weekOffset===0?'This week · so far':'Past week')+'</span> <span class="small muted">'+rangeLabel(w.start,w.end)+'</span></div><div class="actions"><button id="prevWeek" aria-label="Previous week">←</button><button id="thisWeek">This week</button><button id="nextWeek" aria-label="Next week" '+(weekOffset===0?'disabled':'')+'>→</button></div></div><div class="grid four"><article class="card highlight"><div class="eyebrow">Average target completion</div><div class="kpi">'+pct(cur.score)+'</div><p class="small">'+cur.rows.length+' logged days this period</p></article><article class="card"><div class="eyebrow">Week over week</div><div class="kpi">'+(d==null?'—':(d>0?'+':'')+num(d)+'<small> pp</small>')+'</div><p class="muted small">'+paired.length+' matched weekdays'+(b>0&&a!=null?' · '+num((a-b)/b*100)+'% relative change':'')+'</p></article><article class="card"><div class="eyebrow">Logging coverage</div><div class="kpi">'+pct(covered)+'</div><p class="muted small">'+cur.rows.length+' of '+w.days+' elapsed days logged</p></article><article class="card"><div class="eyebrow">Finished time logs</div><div class="kpi">'+pct(complete/w.days*100)+'</div><p class="muted small">'+complete+' days ready for projections</p></article></div><div class="grid two"><article class="card"><div class="row"><h2>Your week, side by side</h2><span class="tag">0–100% of target</span></div><div class="chart">'+bars+'</div><div class="legend"><span><i></i>Selected week</span><span><i style="background:#bac3ed"></i>Previous week, same weekdays</span></div><p class="muted small" style="margin-top:15px">— means unlogged. Bars use each day’s recorded targets.</p></article><article class="card"><h2>By goal</h2>'+allMetrics.map(([id,label])=>{const v=metric(cur.rows,id),p=metric(prev.rows,id);return '<div class="metric"><div class="row"><span>'+esc(label)+'</span><strong>'+pct(v)+'</strong></div>'+bar(v)+'<div class="row small muted"><span>Previous: '+pct(p)+'</span>'+delta(v,p)+'</div></div>'}).join('')+'</article></div><article class="note"><strong>How to read your progress:</strong> Each recorded value ÷ its target × 100, capped at 100% for scoring. Your overall score averages recorded goals within each day, then averages logged days. Week-over-week change uses matching weekdays and goals only. 70% → 72% is +2 percentage points (pp), or +2.86% relative. A changed target changes what 100% means.</article><article class="card"><h2>Weekly history</h2><div class="tablewrap"><table><thead><tr><th>Week starting</th><th>Average completion</th><th>Logging coverage</th><th>Finished days</th></tr></thead><tbody>'+Array.from({length:8},(_,i)=>{const start=shift(monday(localDate()),-7*i),end=i?shift(start,6):localDate(),s=weekSummary(state.records,start,end),n=i?7:limits().days;const actualDays=i?7:Math.round((new Date(localDate()+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1;return '<tr><td>'+start+'</td><td>'+pct(s.score)+'</td><td>'+pct(s.rows.length/actualDays*100)+' ('+s.rows.length+'/'+actualDays+')</td><td>'+s.rows.filter(r=>r.complete).length+'</td></tr>'}).join('')+'</tbody></table></div></article>';
+ $('#prevWeek').onclick=()=>{weekOffset--;renderDashboard()};$('#nextWeek').onclick=()=>{weekOffset=Math.min(0,weekOffset+1);renderDashboard()};$('#thisWeek').onclick=()=>{weekOffset=0;renderDashboard()};
 }
-function startDate(period){
-  const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(periodDays(period)-1)); return d;
+function renderLifetime(){
+ const p=state.profile,from=shift(localDate(),-27),rows=state.records.filter(r=>r.date>=from&&r.date<=localDate()&&r.complete),parts=projection(rows,p.lifespan),remaining=p.age==null?null:p.lifespan-p.age;
+ $('#lifetime').innerHTML='<div class="grid three"><article class="card highlight"><div class="eyebrow">Planning horizon</div><div class="kpi">'+p.lifespan+' <small>years</small></div><p class="small">Your editable assumption</p></article><article class="card"><div class="eyebrow">Life elapsed</div><div class="kpi">'+pct(p.age==null?null:p.age/p.lifespan*100)+'</div><p class="muted small">'+(p.age==null?'Enter your current age in Profile':num(p.age)+' of '+p.lifespan+' planned years')+'</p></article><article class="card"><div class="eyebrow">Time ahead</div><div class="kpi">'+(remaining==null?'—':num(remaining))+' <small>years</small></div><p class="muted small">'+(remaining==null?'Based on your age and planning horizon':pct(remaining/p.lifespan*100)+' of planned lifespan')+'</p></article></div><article class="card"><div class="row"><h2>If your current routine continued</h2><span class="tag">'+rows.length+' / 28 finished days · '+pct(rows.length/28*100)+' coverage</span></div><p class="muted small">Average of finished time logs from '+rangeLabel(from,localDate())+'. Weekends and workdays are included only when logged.</p>'+(parts?'<div class="timeline" aria-label="Projected lifetime allocation">'+parts.map((x,i)=>'<i title="'+(LABELS[x.key]||'Unallocated')+' '+pct(x.percent)+'" style="width:'+x.percent+'%;background:'+(COLORS[i]||'#d3d9e5')+'"></i>').join('')+'</div><div class="tablewrap"><table><thead><tr><th>Activity</th><th>Share of life</th><th>Daily average</th><th>Over '+p.lifespan+' years</th><th>From now</th><th>Total seconds</th></tr></thead><tbody>'+parts.map(x=>'<tr><td>'+(LABELS[x.key]||'Unallocated')+'</td><td><strong>'+pct(x.percent)+'</strong></td><td>'+duration(Math.round(x.seconds))+'</td><td>'+num(x.years,2)+' years<small class="muted">'+num(x.days,2)+' days</small></td><td>'+(remaining==null?'Add age':num(x.seconds/DAY*remaining,2)+' years')+'</td><td>'+num(x.totalSeconds,0)+'</td></tr>').join('')+'</tbody></table></div>':empty('Your routine starts with a day','Log activities and mark a day finished to see your lifetime allocation.'))+'</article><div class="grid two"><article class="card"><h2>70 years, one day at a time</h2><div class="row" style="margin-top:18px"><div class="ring" style="--p:33.333"><div>33.33%</div></div><div><div class="big">23.33 years sleeping</div><p class="muted">Example: 8 hours every day for 70 years.</p><p class="small muted">About 8,522.33 days, using 365.2425 days/year.</p></div></div></article><article class="note"><strong>A scenario, not a prediction.</strong><p>Whole-life figures apply your current routine to the entire chosen lifespan; they are not a record of your past. “From now” uses your entered current age. Update age over time. Averages from a few logged days may not represent your typical week. The same 8-hour daily pattern also projects to 23.33 years of work; days off reduce that estimate when logged.</p></article></div>';
 }
-function goalProgress(goal, period=state.period){
-  const from=startDate(period), days=periodDays(period), target=goal.target*days;
-  const sum=state.logs.filter(l=>l.goalId===goal.id && new Date(l.ts)>=from).reduce((a,b)=>a+Number(b.amount),0);
-  return {sum,target,pct:target?Math.min(100,(sum/target)*100):0};
+function renderHealth(){
+ const rows=[...state.records].sort((a,b)=>a.date.localeCompare(b.date)),latest=rows.at(-1),sleepRows=rows.filter(r=>r.time.sleep!=null&&r.date>=shift(localDate(),-6)),total=sleepRows.reduce((s,r)=>s+(r.time.sleep||0),0);
+ const stageNames={deep:'Deep sleep',light:'Light sleep',rem:'REM sleep'};
+ const bodyMetric=(key,div,unit)=>{const found=rows.filter(r=>r[key]!=null),first=found[0],last=found.at(-1),v=last?.[key];return '<article class="card"><div class="eyebrow">'+(key==='weight'?'Weight':'Height')+'</div><div class="kpi">'+(v==null?'—':num(v/div,3))+' <small>'+unit+'</small></div><p class="muted small">'+(first?pct(v/first[key]*100)+' of first measurement ('+num(first[key]/div,3)+' '+unit+')':'Add your first measurement')+'</p><p class="small muted">'+(last?'Last logged '+last.date:'Percentages need a reference value.')+'</p></article>'};
+ const stages=Object.entries(stageNames).map(([k,label])=>{const sum=sleepRows.reduce((s,r)=>s+(r.stages[k]||0),0);return '<div class="metric"><div class="row"><span>'+label+'</span><strong>'+pct(total?sum/total*100:null)+'</strong></div>'+bar(total?sum/total*100:0)+'<p class="small muted">'+duration(sum)+' recorded · share of total recorded sleep</p></div>'}).join('');
+ const known=sleepRows.reduce((s,r)=>s+Object.values(r.stages).reduce((a,b)=>a+(b||0),0),0);
+ $('#health').innerHTML='<div class="grid three">'+bodyMetric('weight',1000,'kg')+bodyMetric('height',10,'cm')+'<article class="card"><div class="eyebrow">Latest wellbeing</div><div class="kpi">'+pct(latest?.wellbeing==null?null:latest.wellbeing*10)+'</div><p class="muted small">Your own 0–10 rating × 10</p><p class="muted small">A reflection, not a health score.</p></article></div><div class="grid two"><article class="card"><div class="row"><h2>Sleep composition</h2><span class="tag">Last 7 calendar days</span></div>'+stages+'<div class="metric"><div class="row"><span>Unclassified sleep</span><strong>'+pct(total?(total-known)/total*100:null)+'</strong></div><p class="small muted">Sleep without an entered stage stays unclassified.</p></div></article><article class="card"><h2>Sleep consistency</h2><p class="muted small">Your recorded sleep compared with your personal target.</p>'+ (sleepRows.length?sleepRows.map(r=>'<div class="metric"><div class="row"><span>'+r.date+'</span><strong>'+pct(r.time.sleep/r.targets.sleep*100)+'</strong></div>'+bar(normal(r.time.sleep,r.targets.sleep))+'<span class="small muted">'+duration(r.time.sleep)+' / '+duration(r.targets.sleep)+'</span></div>').join(''):empty('No sleep entries yet','Log total sleep and any known stages in your daily journal.'))+'</article></div><article class="note">Sleep stages are entered from a device or diary. Height, weight, and walking data cannot determine deep or light sleep. This app records observations and does not diagnose health conditions. More sleep or a higher weight percentage is not automatically better.</article><article class="card"><h2>Measurements &amp; notes</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Steps / target</th><th>Distance</th><th>Weight</th><th>Height</th><th>Wellbeing</th></tr></thead><tbody>'+rows.slice(-30).reverse().map(r=>'<tr><td>'+r.date+'</td><td>'+pct(r.steps==null?null:r.steps/r.targets.steps*100)+'<small>'+ (r.steps==null?'—':num(r.steps,0))+' / '+num(r.targets.steps,0)+'</small></td><td>'+(r.distance==null?'—':num(r.distance,0)+' m · '+pct(r.distance/r.targets.distance*100))+'</td><td>'+(r.weight==null?'—':num(r.weight/1000,3)+' kg')+'</td><td>'+(r.height==null?'—':num(r.height/10,1)+' cm')+'</td><td>'+pct(r.wellbeing==null?null:r.wellbeing*10)+'</td></tr>').join('')+'</tbody></table></div>'+rows.filter(r=>r.note).slice(-5).reverse().map(r=>'<div class="metric"><strong>'+r.date+'</strong><p class="break muted">'+esc(r.note)+'</p></div>').join('')+'</article>';
 }
-function catProgress(cat){
-  const goals=state.goals.filter(g=>g.cat===cat);
-  if(!goals.length) return {pct:0,done:0,target:0};
-  let w=0,s=0,done=0,target=0;
-  goals.forEach(g=>{const p=goalProgress(g); const wt=Number(g.weight)||1; s+=p.pct*wt;w+=wt;done+=p.sum;target+=p.target;});
-  return {pct:w?s/w:0,done,target};
-}
-function overall(){
-  const active=Object.keys(CATS).filter(c=>state.goals.some(g=>g.cat===c));
-  if(!active.length)return 0;
-  return active.reduce((a,c)=>a+catProgress(c).pct,0)/active.length;
-}
-function logsOn(dateKey){return state.logs.filter(l=>l.ts.slice(0,10)===dateKey)}
-function computeStreak(){
-  let n=0;const d=new Date();
-  while(true){const k=d.toISOString().slice(0,10);if(logsOn(k).length){n++;d.setDate(d.getDate()-1)}else break}
-  return n;
-}
-function onePercentScore(){
-  const t=overall();
-  const y=new Date();y.setDate(y.getDate()-1);const k=y.toISOString().slice(0,10);
-  const hasYesterday=state.logs.some(l=>l.ts.slice(0,10)===k);
-  if(!hasYesterday) return Math.round(t);
-  const currentPeriod=state.period; state.period="day";
-  const todays=overall();
-  const keep=state.logs;
-  state.logs=keep.filter(l=>l.ts.slice(0,10)===k);
-  const yPct=overall();
-  state.logs=keep; state.period=currentPeriod;
-  return Math.round((todays-yPct)*10)/10;
-}
-function unitLabel(v){ if(v>=1000)return Math.round(v).toLocaleString(); return Number(v.toFixed ? v.toFixed(1) : v).toLocaleString(); }
-
 function render(){
-  document.body.dataset.theme=state.theme;
-  $("#themeBtn").textContent=state.theme==="dark"?"☀️ Light":"🌙 Dark";
-  $$("#periodTabs button").forEach(b=>b.classList.toggle("active",b.dataset.period===state.period));
-  const o=overall();
-  $("#overallPct").textContent=Math.round(o)+"%";$("#overallRing").style.setProperty("--p",o);
-  $("#streak").textContent=computeStreak()+"d";
-  $("#unitsToday").textContent=Math.round(logsOn(todayKey()).reduce((a,b)=>a+Number(b.amount),0)).toLocaleString();
-  const op=onePercentScore();$("#onePercent").textContent=(op>0?"+":"")+op+"%";
+ $('#todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ $('#demoBanner').hidden=!demo;$('#demoBtn').textContent=demo?'Exit demo':'Explore demo';$('#storageError').hidden=!loadError;$('#storageError').textContent=loadError;
+ if(view==='dashboard')renderDashboard();if(view==='lifetime')renderLifetime();if(view==='health')renderHealth();
+ if(view==='journal')renderRecent();if(view==='settings')renderSettings();
+}
 
-  const cats=Object.entries(CATS);
-  $("#categoryGrid").innerHTML=cats.map(([key,c])=>{
-    const p=catProgress(key); const goals=state.goals.filter(g=>g.cat===key);
-    const primary=goals[0];
-    return `<article class="card category">
-      <div class="cat-top">
-        <div class="cat-name"><div class="icon">${c.icon}</div><div><h4>${c.name}</h4><small>${goals.length?goals.length+" measurable goal"+(goals.length>1?"s":""):c.hint}</small></div></div>
-        <div class="pct">${Math.round(p.pct)}%</div>
-      </div>
-      <div class="bar"><i style="width:${Math.min(100,p.pct)}%"></i></div>
-      <div class="unit-line"><span>${primary?`${unitLabel(goalProgress(primary).sum)} / ${unitLabel(goalProgress(primary).target)} ${primary.unit}`:"No goal yet"}</span><span>${state.period}</span></div>
-      <div class="quick">
-        ${primary?`<button onclick="quickAdd('${primary.id}',${primary.quick})">+${primary.quick} ${primary.unit}</button><button onclick="openLog('${primary.id}')">Log</button><button onclick="editGoal('${primary.id}')">Edit</button>`:`<button onclick="newGoal('${key}')">+ Add smallest unit</button>`}
-      </div>
-    </article>`;
-  }).join("");
+function renderRecent(){const rows=[...state.records].sort((a,b)=>b.date.localeCompare(a.date));$('#recentEntries').innerHTML=rows.length?rows.slice(0,30).map(r=>'<div class="metric row"><div><strong>'+r.date+'</strong><p class="muted small">'+pct(score(r))+' target completion · '+(r.complete?'Finished':'Partial')+'</p></div><button data-date="'+r.date+'">Edit</button></div>').join(''):empty('A fresh start','Log your first day, or explore the demo.');document.querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>{loadDay(b.dataset.date);window.scrollTo({top:0,behavior:'smooth'})})}
+const timeField=(id,label)=>'<label>'+label+'<input id="'+id+'" type="text" inputmode="numeric" placeholder="HH:MM:SS" maxlength="8" pattern="[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]"></label>';
+$('#timeInputs').innerHTML=ACTIVITIES.map(k=>timeField('time_'+k,LABELS[k])).join('');
+$('#stageInputs').innerHTML=['deep','light','rem'].map(k=>timeField('stage_'+k,k==='rem'?'REM sleep':k[0].toUpperCase()+k.slice(1)+' sleep')).join('');
+let editingTargets,editingCustom=[];
+function loadDay(date=localDate()){
+ $('#dayForm').reset();$('#entryDate').value=date;$('#entryDate').max=localDate();$('#formError').textContent='';
+ const r=state.records.find(x=>x.date===date);
+ editingTargets=structuredClone(r?.targets||state.profile.targets);
+ ACTIVITIES.forEach(k=>$('#time_'+k).value=duration(r?.time[k]));
+ ['deep','light','rem'].forEach(k=>$('#stage_'+k).value=duration(r?.stages[k]));
+ ['steps','distance','weight','height','wellbeing'].forEach(k=>$('#'+k).value=r?.[k]==null?'':r[k]/(k==='weight'?1000:k==='height'?10:1));
+ $('#note').value=r?.note||'';$('#complete').checked=!!r?.complete;
+ editingCustom=r?structuredClone(r.custom):state.goals.map(g=>({...g,value:null}));
+ $('#customInputs').innerHTML=editingCustom.length?editingCustom.map((g,i)=>'<label>'+esc(g.name)+' ('+esc(g.unit)+')<input id="custom_'+i+'" type="number" min="0" max="1000000000000" step="any" value="'+(g.value??'')+'"><span class="muted small">Target: '+num(g.target,3)+' '+esc(g.unit)+'</span></label>').join(''):'<p class="muted small">Add custom goals under Profile &amp; goals.</p>';
+ updateBudget();
+}
+function updateBudget(){try{const s=ACTIVITIES.reduce((a,k)=>a+(parseDuration($('#time_'+k).value)||0),0);$('#dayBudget').textContent=pct(s/DAY*100)+' of your day allocated · '+num(s,0)+' seconds · '+(s>DAY?'Over 24 hours':duration(DAY-s)+' unallocated');$('#dayBudget').classList.toggle('error',s>DAY)}catch(e){$('#dayBudget').textContent=e.message}}
+$('#timeInputs').addEventListener('input',updateBudget);
+$('#entryDate').onchange=()=>{if($('#entryDate').value)loadDay($('#entryDate').value)};
+$('#clearDraft').onclick=()=>{const date=$('#entryDate').value;$('#dayForm').reset();$('#entryDate').value=date;updateBudget();toast('Form cleared. Saved entry is unchanged until you save.')};
+$('#dayForm').onsubmit=e=>{e.preventDefault();try{
+ const val=(k,m=1)=>$('#'+k).value===''?null:Number($('#'+k).value)*m;
+ const r={date:$('#entryDate').value,time:Object.fromEntries(ACTIVITIES.map(k=>[k,parseDuration($('#time_'+k).value)])),stages:Object.fromEntries(['deep','light','rem'].map(k=>[k,parseDuration($('#stage_'+k).value)])),steps:val('steps'),distance:val('distance'),weight:val('weight')==null?null:Math.round(val('weight',1000)),height:val('height')==null?null:Math.round(val('height',10)),wellbeing:val('wellbeing'),targets:editingTargets,custom:editingCustom.map((g,i)=>({...g,value:val('custom_'+i)})),note:$('#note').value.trim(),complete:$('#complete').checked};
+ validateRecord(r);const next=structuredClone(state);next.records=next.records.filter(x=>x.date!==r.date).concat(r);persist(next);$('#formError').textContent='';renderRecent();toast(demo?'Demo entry updated temporarily':'Daily entry saved'); 
+ }catch(e){$('#formError').textContent=e.message}};
+function renderSettings(){const p=state.profile;$('#age').value=p.age??'';$('#lifespan').value=p.lifespan;$('#targetSleep').value=p.targets.sleep/3600;$('#targetSteps').value=p.targets.steps;$('#targetDistance').value=p.targets.distance;$('#targetWork').value=p.targets.work/3600;$('#targetFamily').value=p.targets.family/3600;$('#goalList').innerHTML=state.goals.map(g=>'<div class="metric"><strong>'+esc(g.name)+'</strong><p class="muted small">'+num(g.target,3)+' '+esc(g.unit)+' / day</p></div>').join('')}
+$('#profileForm').onsubmit=e=>{e.preventDefault();try{const next=structuredClone(state);next.profile={age:$('#age').value===''?null:Number($('#age').value),lifespan:Number($('#lifespan').value),targets:{sleep:Math.round(Number($('#targetSleep').value)*3600),steps:Number($('#targetSteps').value),distance:Number($('#targetDistance').value),work:Math.round(Number($('#targetWork').value)*3600),family:Math.round(Number($('#targetFamily').value)*3600)}};validateState(next);persist(next);$('#profileError').textContent='';toast('Profile saved. Existing dates retain their targets.');loadDay($('#entryDate').value)}catch(e){$('#profileError').textContent=e.message}};
+$('#goalForm').onsubmit=e=>{e.preventDefault();try{const g={id:'goal_'+crypto.randomUUID(),name:$('#goalName').value.trim(),unit:$('#goalUnit').value.trim(),target:Number($('#goalTarget').value)};if(!g.name||!g.unit)throw Error('Enter a goal name and unit.');const next=structuredClone(state);next.goals.push(g);validateState(next);persist(next);$('#goalForm').reset();renderSettings();loadDay($('#entryDate').value);toast('Goal added for new dates.')}catch(e){toast(e.message)}};
+function download(data,name){const url=URL.createObjectURL(new Blob([typeof data==='string'?data:JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('#exportBtn').onclick=()=>{try{download(readOnly?localStorage.getItem(KEY):state,'progress-percent-'+localDate()+'.json')}catch(e){$('#backupError').textContent=e.message}};
+$('#importBtn').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>15000000)throw Error('Backup is too large (maximum 15 MB).');const incoming=validateState(JSON.parse(await file.text()));if(!confirm('Merge this backup? Matching dates and your profile/goals will be replaced. Export your current data first if you need a copy.'))return;const next={...incoming,records:[...new Map([...state.records,...incoming.records].map(r=>[r.date,r])).values()]};validateState(next);if(!demo)localStorage.setItem(KEY,JSON.stringify(next));state=next;readOnly=false;loadError='';$('#backupError').textContent='';render();loadDay();toast('Backup restored')}catch(e){$('#backupError').textContent=e.message}finally{e.target.value=''}};
+$('#printBtn').onclick=()=>{show('dashboard');window.print()};
+function makeDemo(){const s=blank();s.profile.age=27;s.goals=[{id:'reading',name:'Reading',unit:'pages',target:20}];for(let i=27;i>=0;i--){const f=.60+((27-i)%7)*.045, sleep=25200+(i%3)*1800;const r={date:shift(localDate(),-i),time:{sleep,work:i%7<5?Math.round(28800*f):0,walking:2400,family:3600,friends:1800,learning:2400,care:5400,other:1800},stages:{deep:5400,light:14400,rem:5400},steps:Math.round(8000*f),distance:Math.round(5000*f),weight:72000-i*20,height:1750,wellbeing:7+(i%3)*.5,targets:structuredClone(s.profile.targets),custom:[{...s.goals[0],value:Math.round(20*f)}],note:i===0?'Illustrative entry. Replace demo with your own daily routine.':'',complete:true};s.records.push(validateRecord(r))}return s}
+$('#demoBtn').onclick=()=>{if(!demo){realState=state;state=makeDemo();demo=true}else{state=realState;realState=null;demo=false}weekOffset=0;loadDay();render()};
+$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
+$('#logBtn').onclick=()=>{loadDay();show('journal')};
+loadDay();render();
 
-  renderLogs(); drawChart(); renderCoach();
-}
-function renderLogs(){
-  const recent=[...state.logs].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,12);
-  const notes=[...state.notes].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,4).map(n=>({...n,isNote:true}));
-  const all=[...recent,...notes].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,12);
-  $("#logList").innerHTML=all.length?all.map(l=>{
-    if(l.isNote)return `<div class="log-item"><span class="dot" style="background:var(--accent2)"></span><div><b>Life note</b><small>${escapeHtml(l.text)}</small></div><em>${new Date(l.ts).toLocaleDateString()}</em></div>`;
-    const g=state.goals.find(x=>x.id===l.goalId);
-    return `<div class="log-item"><span class="dot"></span><div><b>${g?escapeHtml(g.name):"Deleted goal"}</b><small>${l.note?escapeHtml(l.note):new Date(l.ts).toLocaleString()}</small></div><em>+${unitLabel(Number(l.amount))}${g?" "+escapeHtml(g.unit):""}</em></div>`;
-  }).join(""):`<div class="empty">No units logged yet.</div>`;
-}
-function drawChart(){
-  const canvas=$("#trendCanvas"),ctx=canvas.getContext("2d");
-  const w=canvas.width,h=canvas.height,pad=46;
-  ctx.clearRect(0,0,w,h);
-  const css=getComputedStyle(document.body), muted=css.getPropertyValue("--muted").trim(), line=css.getPropertyValue("--line").trim(), accent=css.getPropertyValue("--accent").trim(), panel=css.getPropertyValue("--panel").trim();
-  ctx.strokeStyle=line;ctx.fillStyle=muted;ctx.lineWidth=1;ctx.font="12px system-ui";
-  [0,25,50,75,100].forEach(v=>{const y=h-pad-(v/100)*(h-pad*1.4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-18,y);ctx.stroke();ctx.fillText(v+"%",7,y+4)});
-  const vals=[];
-  const keepLogs=state.logs, keepPeriod=state.period;
-  for(let i=6;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);
-    state.logs=keepLogs.filter(l=>l.ts.slice(0,10)===k); state.period="day";
-    vals.push({k,label:d.toLocaleDateString(undefined,{weekday:"short"}),v:overall()});
-  }
-  state.logs=keepLogs;state.period=keepPeriod;
-  const usable=w-pad-30, step=usable/6;
-  ctx.beginPath();ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.lineJoin="round";ctx.lineCap="round";
-  vals.forEach((p,i)=>{const x=pad+i*step,y=h-pad-(p.v/100)*(h-pad*1.4);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
-  vals.forEach((p,i)=>{const x=pad+i*step,y=h-pad-(p.v/100)*(h-pad*1.4);ctx.beginPath();ctx.fillStyle=panel;ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.arc(x,y,6,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=muted;ctx.fillText(p.label,x-11,h-13)});
-}
-function renderCoach(){
-  const scores=Object.keys(CATS).map(c=>({c,p:catProgress(c).pct})).filter(x=>state.goals.some(g=>g.cat===x.c)).sort((a,b)=>a.p-b.p);
-  if(!scores.length)return;
-  const low=scores[0],name=CATS[low.c].name;
-  $("#coachTitle").textContent=low.p<60?`${name} has the most leverage today.`:`You are building balanced momentum.`;
-  $("#coachText").textContent=low.p<60?`A single smallest-unit action in ${name.toLowerCase()} can lift your whole-life percentage.`:`Protect the streak. Add one meaningful unit to your weakest category before the day ends.`;
-}
-function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-window.quickAdd=(id,amt)=>{state.logs.push({id:"l_"+Date.now(),goalId:id,amount:Number(amt),note:"Quick add",ts:nowISO()});save();render();toast("Progress logged");}
-window.openLog=id=>{const g=state.goals.find(x=>x.id===id);if(!g)return;$("#logGoalId").value=id;$("#logGoalName").value=g.name;$("#logAmount").value=g.quick;$("#logNote").value="";modal("logModal")}
-window.newGoal=cat=>{resetGoalForm();$("#goalCategory").value=cat;modal("goalModal")}
-window.editGoal=id=>{const g=state.goals.find(x=>x.id===id);if(!g)return;$("#goalId").value=g.id;$("#goalCategory").value=g.cat;$("#goalName").value=g.name;$("#goalUnit").value=g.unit;$("#goalTarget").value=g.target;$("#goalQuick").value=g.quick;$("#goalWeight").value=g.weight||1;$("#goalWhy").value=g.why||"";$("#goalModalTitle").textContent="Edit measurable goal";$("#deleteGoalBtn").style.display="inline-block";modal("goalModal")}
-
-function resetGoalForm(){
-  $("#goalForm").reset();$("#goalId").value="";$("#goalWeight").value=1;$("#goalModalTitle").textContent="Add a measurable goal";$("#deleteGoalBtn").style.display="none";
-}
-$("#goalCategory").innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
-$("#addGoalBtn").onclick=()=>{resetGoalForm();modal("goalModal")};
-$("#themeBtn").onclick=()=>{state.theme=state.theme==="dark"?"light":"dark";save();render()};
-$("#periodTabs").onclick=e=>{if(e.target.dataset.period){state.period=e.target.dataset.period;save();render()}};
-$("#goalForm").onsubmit=e=>{
-  e.preventDefault();const id=$("#goalId").value||"g_"+Date.now();
-  const g={id,cat:$("#goalCategory").value,name:$("#goalName").value.trim(),unit:$("#goalUnit").value.trim(),target:Number($("#goalTarget").value),quick:Number($("#goalQuick").value),weight:Number($("#goalWeight").value)||1,why:$("#goalWhy").value.trim()};
-  const ix=state.goals.findIndex(x=>x.id===id); if(ix>=0)state.goals[ix]=g;else state.goals.push(g);
-  save();modal("goalModal",false);render();toast(ix>=0?"Goal updated":"Goal added");
-};
-$("#deleteGoalBtn").onclick=()=>{
-  const id=$("#goalId").value;if(!id)return;
-  if(confirm("Delete this goal? Existing history for it will remain in the raw export.")){state.goals=state.goals.filter(g=>g.id!==id);save();modal("goalModal",false);render();toast("Goal deleted")}
-};
-$("#logForm").onsubmit=e=>{
-  e.preventDefault();state.logs.push({id:"l_"+Date.now(),goalId:$("#logGoalId").value,amount:Number($("#logAmount").value),note:$("#logNote").value.trim(),ts:nowISO()});
-  save();modal("logModal",false);render();toast("Unit logged");
-};
-$("#noteBtn").onclick=()=>{ $("#noteText").value="";modal("noteModal") };
-$("#noteForm").onsubmit=e=>{e.preventDefault();state.notes.push({id:"n_"+Date.now(),text:$("#noteText").value.trim(),ts:nowISO(),isNote:true});save();modal("noteModal",false);render();toast("Note saved")};
-$("#exportBtn").onclick=()=>{
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="progress-percent-backup-"+todayKey()+".json";a.click();URL.revokeObjectURL(url);toast("Backup exported");
-};
-window.addEventListener("resize",drawChart);
-render();
-</script>
-</body>
-</html>
+</script></body></html>
