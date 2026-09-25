@@ -1,0 +1,85 @@
+name: Build Android APK
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', 'index.html', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android-preview
+  cancel-in-progress: false
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Reuse preview signing key when available
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: progress-percent-preview-signing-v1
+      - name: Prepare offline Android project
+        run: |
+          python android/prepare.py "$RUNNER_TEMP/progress-android"
+          node --check "$RUNNER_TEMP/progress-android/app-script.js"
+      - name: Build and check APK
+        run: |
+          gradle -p "$RUNNER_TEMP/progress-android" assembleRelease assembleDebug assembleDebugAndroidTest --no-daemon
+          mkdir -p release
+          cp "$RUNNER_TEMP/progress-android/app/build/outputs/apk/release/app-release.apk" release/Progress-Percent-Android.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs release/Progress-Percent-Android.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Progress-Percent-Android.apk | head -n 15
+          cd release
+          sha256sum Progress-Percent-Android.apk > SHA256SUMS.txt
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test offline app on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: gradle -p "$RUNNER_TEMP/progress-android" connectedDebugAndroidTest --no-daemon
+      - name: Save test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-test-report
+          path: ${{ runner.temp }}/progress-android/app/build/reports/androidTests/
+          if-no-files-found: ignore
+      - name: Save installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Progress-Percent-Android
+          path: release/
+          retention-days: 90
+      - name: Publish tested Android preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="android-preview-${GITHUB_RUN_NUMBER}"
+          cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
+          Installable offline Android preview of Progress %.
+
+          Download **Progress-Percent-Android.apk** below on your Android phone and open it to install. Android 8.0 or newer with an updated Android System WebView is required.
+
+          Includes weekly progress, daily journal, sleep stages, body measurements, lifetime projections and custom goals. Data stays in the app. Use Profile > Export backup before uninstalling or clearing app data. Website backups can be restored using Profile > Restore backup.
+
+          This is a preview APK, not a Google Play release. It uses a preview signing key cached by GitHub Actions. If that key expires, a later preview may require backing up and reinstalling.
+
+          The build verifies the APK signature and runs Android emulator tests for offline loading, validation, reports, demo isolation and persistence after activity recreation. No physical-phone test has been performed.
+          NOTES
+          gh release create "$tag" release/Progress-Percent-Android.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.0 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
