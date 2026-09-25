@@ -2,6 +2,30 @@
 
 A personal progress dashboard with daily journaling, weekly comparisons, sleep and body measurements, and lifetime time projections.
 
+## Android app
+The installable Android preview is built and tested entirely on GitHub. Download the APK from [Android releases](https://github.com/Eagle00009/progress-percent/releases) after the **Build Android APK** workflow succeeds.
+
+- Android 8.0+ (API 26), with an updated Android System WebView.
+- Installs as **Progress %**, package `com.jeevesh.progress`.
+- Dashboard and all app code are bundled in the APK. No website connection is required, and the manifest requests no Internet permission.
+- Daily entries are stored atomically in a private app file. They remain after normal app restarts; uninstalling or clearing app data removes them.
+- Android file picker handles JSON backup/export and restore. Use a website version 2 backup to transfer existing web entries. Automatic sync is not included.
+- Native Android printing, system back handling and fixed bottom navigation.
+- Sleep and activity values remain manual inputs; no wearable or sensor permissions are requested.
+
+Open the downloaded `Progress-Percent-Android.apk` on your phone and follow Android's installation prompt. If Android asks, allow installation from the browser/file manager used to open this APK.
+
+This is a **preview**, not a Google Play production release. Release-mode code is signed using a preview/debug key retained in the GitHub Actions cache. If that cache expires, a future preview may have a different signature; export your data before reinstalling. A dedicated private production signing key is needed before store distribution.
+
+### Android source and checks
+`android/prepare.py` holds the Gradle, manifest, Java activity, resources and instrumentation-test templates. It packages the existing dashboard with Android storage and backup integrations into a generated project in the GitHub runner's temporary directory. This avoids duplicating the web UI source.
+
+`.github/workflows/android.yml` builds the APK, checks its signature and manifest, runs Android 15 emulator tests, and publishes the APK plus SHA-256 checksum only after successful checks. Tests cover offline initialization, percentage calculations, time/sleep validation, grams/mm precision, persistence after activity recreation, reports, profile persistence and demo isolation. Physical-phone and real document-provider backup/restore testing remain manual checks.
+
+Build stack: Java 17, Gradle 8.13, Android Gradle Plugin 8.11.1, compile/target SDK 36, AndroidX WebKit 1.14.0. The local-asset origin follows [Android's WebViewAssetLoader guidance](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content).
+
+## Website version
+
 ## Start
 Open the GitHub Pages app once deployment succeeds. Select **Explore demo** for illustrative data, or **Profile & goals** to enter your age and personal targets, then **Log your day**.
 
