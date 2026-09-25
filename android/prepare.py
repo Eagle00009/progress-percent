@@ -57,6 +57,7 @@ def prepare(destination):
     html = (root / "index.html").read_text(encoding="utf-8")
     assert html.count("<script>") == 1, "Review HTML script changes before packaging"
     html = html.replace("localStorage.", "appStorage.")
+    html = html.replace('inputmode="numeric"', 'inputmode="text"')
     html = html.replace("<script>", "<script>\n" + BOOTSTRAP, 1)
     html = html.replace("</script>", ANDROID_JS + "\n</script>", 1)
     html = html.replace("Saved in this browser.", "Saved privately on this phone.")
@@ -70,7 +71,7 @@ def prepare(destination):
       .sidebar{padding:12px 16px;gap:0}
       .sidebar>div:nth-child(2)>.eyebrow{display:none}
       .sidebar nav{position:fixed;bottom:0;left:0;right:0;z-index:30;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:var(--paper);border-top:1px solid var(--line);padding:7px 4px;overflow:visible}
-      .sidebar nav button{font-size:13px;min-height:48px;padding:8px 2px;text-align:center}
+      .sidebar nav button{font-size:14px;min-height:48px;padding:8px 2px;text-align:center}
       main{padding-bottom:92px}
       .status{bottom:80px}
     }
