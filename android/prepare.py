@@ -4,13 +4,13 @@ The reviewed HTML app is packaged inside the APK, never fetched from a website.
 Generated files live only in RUNNER_TEMP; source templates stay in GitHub.
 """
 from pathlib import Path
-import json, os, re, sys
+import json, os, re, sys, subprocess
 
 FILES = json.loads(r'''{
  "settings.gradle": "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\nrootProject.name = 'ProgressPercent'\ninclude ':app'\n",
  "build.gradle": "plugins { id 'com.android.application' version '8.11.1' apply false }\n",
  "gradle.properties": "android.useAndroidX=true\norg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8\n",
- "app/build.gradle": "plugins { id 'com.android.application' }\nandroid {\n namespace 'com.jeevesh.progress'\n compileSdk 36\n defaultConfig {\n  applicationId 'com.jeevesh.progress'\n  minSdk 26\n  targetSdk 36\n  versionCode Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')\n  versionName '1.1.0-preview'\n  testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n }\n buildFeatures { buildConfig true }\n buildTypes { release { minifyEnabled false; signingConfig signingConfigs.debug } }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n lint { abortOnError true }\n}\ndependencies {\n implementation 'androidx.webkit:webkit:1.14.0'\n androidTestImplementation 'androidx.test.ext:junit:1.2.1'\n androidTestImplementation 'androidx.test:core:1.6.1'\n androidTestImplementation 'androidx.test:runner:1.6.2'\n}\n",
+ "app/build.gradle": "plugins { id 'com.android.application' }\nandroid {\n namespace 'com.jeevesh.progress'\n compileSdk 36\n defaultConfig {\n  applicationId 'com.jeevesh.progress'\n  minSdk 26\n  targetSdk 36\n  versionCode Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')\n  versionName '1.1.0-preview'\n  testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n }\n signingConfigs { debug { storeFile file(System.getProperty('user.home') + '/.android/debug.keystore'); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android' } }\n buildFeatures { buildConfig true }\n buildTypes { release { minifyEnabled false; signingConfig signingConfigs.debug } }\n compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }\n lint { abortOnError true }\n}\ndependencies {\n implementation 'androidx.webkit:webkit:1.14.0'\n androidTestImplementation 'androidx.test.ext:junit:1.2.1'\n androidTestImplementation 'androidx.test:core:1.6.1'\n androidTestImplementation 'androidx.test:runner:1.6.2'\n}\n",
  "app/src/main/AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n <application android:label=\"Progress %\" android:icon=\"@drawable/ic_launcher\" android:roundIcon=\"@drawable/ic_launcher\" android:theme=\"@style/AppTheme\" android:allowBackup=\"false\" android:usesCleartextTraffic=\"false\" android:supportsRtl=\"true\">\n  <activity android:name=\".MainActivity\" android:exported=\"true\" android:configChanges=\"orientation|screenSize|keyboardHidden\" android:windowSoftInputMode=\"adjustResize\">\n   <intent-filter><action android:name=\"android.intent.action.MAIN\"/><category android:name=\"android.intent.category.LAUNCHER\"/></intent-filter>\n  </activity>\n </application>\n</manifest>\n",
  "app/src/main/res/values/styles.xml": "<resources><style name=\"AppTheme\" parent=\"android:style/Theme.Material.Light.NoActionBar\">\n <item name=\"android:fontFamily\">sans</item><item name=\"android:colorAccent\">#087F78</item>\n <item name=\"android:windowLightStatusBar\">true</item><item name=\"android:statusBarColor\">#EFF5F7</item>\n <item name=\"android:navigationBarColor\">#FFFFFF</item><item name=\"android:windowActionModeOverlay\">true</item>\n <item name=\"android:windowBackground\">#EFF5F7</item>\n</style></resources>\n",
  "app/src/main/res/drawable/ic_launcher.xml": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\" android:width=\"108dp\" android:height=\"108dp\" android:viewportWidth=\"108\" android:viewportHeight=\"108\">\n <path android:fillColor=\"#087F78\" android:pathData=\"M0,0h108v108h-108z\"/>\n <path android:strokeColor=\"#FFFFFF\" android:strokeWidth=\"8\" android:strokeLineCap=\"round\" android:pathData=\"M36,77L72,31\"/>\n <path android:fillColor=\"#FFFFFF\" android:pathData=\"M36,25a12,12 0,1 0,0 24a12,12 0,1 0,0 -24M72,59a12,12 0,1 0,0 24a12,12 0,1 0,0 -24\"/>\n <path android:fillColor=\"#087F78\" android:pathData=\"M36,32a5,5 0,1 0,0 10a5,5 0,1 0,0 -10M72,66a5,5 0,1 0,0 10a5,5 0,1 0,0 -10\"/>\n</vector>\n",
@@ -155,6 +155,16 @@ def prepare(destination):
     root = Path(__file__).resolve().parent.parent
     out = Path(destination).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    # Explicit path: AGP's default moved, so caching ~/.android alone was ineffective.
+    signing_key = Path.home() / ".android" / "debug.keystore"
+    signing_key.parent.mkdir(parents=True, exist_ok=True)
+    if not signing_key.exists():
+        subprocess.run(["keytool", "-genkeypair", "-keystore", str(signing_key),
+                        "-storepass", "android", "-alias", "androiddebugkey",
+                        "-keypass", "android", "-keyalg", "RSA", "-keysize", "2048",
+                        "-validity", "10000", "-dname", "CN=Progress Percent Preview",
+                        "-storetype", "JKS", "-noprompt"], check=True)
+    print("Using persistent preview signing key at the GitHub Actions cache path")
     for name, content in FILES.items():
         file = out / name
         file.parent.mkdir(parents=True, exist_ok=True)
