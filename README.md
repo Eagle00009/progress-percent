@@ -17,10 +17,17 @@ Open the downloaded `Progress-Percent-Android.apk` on your phone and follow Andr
 
 This is a **preview**, not a Google Play production release. Release-mode code is signed using a preview/debug key retained in the GitHub Actions cache. If that cache expires, a future preview may have a different signature; export your data before reinstalling. A dedicated private production signing key is needed before store distribution.
 
+### Android 1.1 entry redesign
+The Android daily journal has colour-coded Sleep, Time, Body and Notes sections, a teal/navy theme, larger touch controls, separate hours/minutes inputs, optional exact seconds, quick duration presets and step increments. Blank means unknown; an entered zero remains zero.
+
+Family time is removed from Android entry, targets and scoring. Existing family seconds are included in Miscellaneous and retained as archival metadata in version-2 backups, so recorded time is not lost.
+
+**Updating from previews 1–5:** those builds used temporary signing keys, so Android cannot install this update over them. First use **Profile > Export backup** in the old app and confirm the JSON file was saved. Then uninstall the old app, install the new APK, and use **Profile > Restore backup**. Do not uninstall before exporting if you have entries to keep. Build 6 uses an explicit cached key path for subsequent previews.
+
 ### Android source and checks
 `android/prepare.py` holds the Gradle, manifest, Java activity, resources and instrumentation-test templates. It packages the existing dashboard with Android storage and backup integrations into a generated project in the GitHub runner's temporary directory. This avoids duplicating the web UI source.
 
-`.github/workflows/android.yml` builds the APK, checks its signature and manifest, runs Android 15 emulator tests, and publishes the APK plus SHA-256 checksum only after successful checks. Tests cover offline initialization, percentage calculations, time/sleep validation, grams/mm precision, persistence after activity recreation, reports, profile persistence and demo isolation. Physical-phone and real document-provider backup/restore testing remain manual checks.
+`.github/workflows/android.yml` builds the APK, checks its signature and manifest, runs Android 15 emulator tests, and publishes the APK plus SHA-256 checksum only after successful checks. Tests cover offline initialization, percentage calculations, time/sleep validation, grams/mm precision, persistence after activity recreation, reports, profile persistence, entry-section switching, duration controls, sleep-stage percentage updates, Family-time migration and demo isolation. Physical-phone and real document-provider backup/restore testing remain manual checks.
 
 Build stack: Java 17, Gradle 8.13, Android Gradle Plugin 8.11.1, compile/target SDK 36, AndroidX WebKit 1.14.0. The local-asset origin follows [Android's WebViewAssetLoader guidance](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content).
 
