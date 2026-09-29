@@ -11,11 +11,22 @@ The installable Android preview is built and tested entirely on GitHub. Download
 - Daily entries are stored atomically in a private app file. They remain after normal app restarts; uninstalling or clearing app data removes them.
 - Android file picker handles JSON backup/export and restore. Use a website version 2 backup to transfer existing web entries. Automatic sync is not included.
 - Native Android printing, system back handling and fixed bottom navigation.
-- Sleep and activity values remain manual inputs; no wearable or sensor permissions are requested.
+- Daily entries can be entered manually or selectively imported from Google Fit via Health Connect. No direct wearable pairing is required.
 
 Open the downloaded `Progress-Percent-Android.apk` on your phone and follow Android's installation prompt. If Android asks, allow installation from the browser/file manager used to open this APK.
 
 This is a **preview**, not a Google Play production release. Release-mode code is signed using a preview/debug key retained in the GitHub Actions cache. If that cache expires, a future preview may have a different signature; export your data before reinstalling. A dedicated private production signing key is needed before store distribution.
+
+### Android 1.2 Google Fit import
+In Google Fit, enable **Profile > Settings > Sync Fit with Health Connect** and allow Fit to write your data. In Progress %, open **Journal > Google Fit > Connect**, grant the read permissions you want, choose a date and tap **Import selected day**. For older records, expand **Import previous data**, select a range of up to 31 days, read it, review the summary and tap **Save imported history**. Review the available values, select which daily fields to apply, then tap **Save my day**.
+
+The importer reads only records shared by Google Fit (`com.google.android.apps.fitness`) through Health Connect. It does not connect to NoiseFit directly. Data visible in Fit is not necessarily written to Health Connect; unavailable values remain missing, never zero. Health Connect requires Android 9+ and may need installation/update on older phones.
+
+Supported types: steps, all-activity distance, sleep and stages, active/total calories, average/min/max and resting heart rate, workouts, latest daily weight/height and oxygen saturation when shared. Calories and heart rate retain their physical units; no invented medical percentage score is assigned. Sleep/workout intervals are clipped to the selected calendar day in the phone's current time zone. Duplicate sleep intervals are merged. If asleep stages exist, sleep uses reported asleep stages; otherwise it uses session duration minus reported awake time.
+
+This release imports **one selected day or a date range of up to 31 days, on demand**. You can import additional months in separate batches. Tap **Connect** and grant **Access past data** for older records where Health Connect supports it. Without this extra permission, Health Connect may restrict older history. No app can retrieve Google Fit records that were never shared to Health Connect. It does not perform background sync. Filled manual fields are unchecked by default; applying them requires explicitly selecting their checkbox. Workouts are stored separately and not automatically added to the activity budget, avoiding double counting. Historical imports fill only missing daily values and merge by date; re-importing does not create duplicate days. Days with no data are skipped. New historical records use your current personal targets and remain unfinished until reviewed. The import snapshot is saved with the daily record and included in JSON backups. Read access can be revoked in Health Connect. No health data is sent to GitHub or another server.
+
+Lifetime examples now use your saved planning lifespan. The remaining-years column is explicitly labelled as planning lifespan minus current age; it does not replace your whole-life horizon.
 
 ### Android 1.1 entry redesign
 The Android daily journal has colour-coded Sleep, Time, Body and Notes sections, a teal/navy theme, larger touch controls, separate hours/minutes inputs, optional exact seconds, quick duration presets and step increments. Blank means unknown; an entered zero remains zero.
