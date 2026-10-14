@@ -1,46 +1,28 @@
 # Progress %
 
-A personal progress dashboard with daily journaling, weekly comparisons, sleep and body measurements, and lifetime time projections.
+An Android tracker with daily personal-best comparisons, Google Fit imports, income and wealth planning, and lifetime projections.
 
-## Android app
-The installable Android preview is built and tested entirely on GitHub. Download the APK from [Android releases](https://github.com/Eagle00009/progress-percent/releases) after the **Build Android APK** workflow succeeds.
+## Android app — 1.3 preview
 
-- Android 8.0+ (API 26), with an updated Android System WebView.
-- Installs as **Progress %**, package `com.jeevesh.progress`.
-- Dashboard and all app code are bundled in the APK. No website connection is required, and the manifest requests no Internet permission.
-- Daily entries are stored atomically in a private app file. They remain after normal app restarts; uninstalling or clearing app data removes them.
-- Android file picker handles JSON backup/export and restore. Use a website version 2 backup to transfer existing web entries. Automatic sync is not included.
-- Native Android printing, system back handling and fixed bottom navigation.
-- Daily entries can be entered manually or selectively imported from Google Fit via Health Connect. No direct wearable pairing is required.
+Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/latest). These features apply to Android; the website section below describes the older separate web version.
 
-Open the downloaded `Progress-Percent-Android.apk` on your phone and follow Android's installation prompt. If Android asks, allow installation from the browser/file manager used to open this APK.
+**Back up before updating.** The signing-key cache from previews 6–8 expired before build 9. Builds 9 onward use a new signing certificate. Android cannot install them over an app signed with the old key. Export your JSON backup from the installed app first, keep it safe, then reinstall only if Android requires it, and restore the backup. Uninstalling without a backup removes your data. Preview signing uses a GitHub Actions cache, not a permanent production signing arrangement.
 
-This is a **preview**, not a Google Play production release. Release-mode code is signed using a preview/debug key retained in the GitHub Actions cache. If that cache expires, a future preview may have a different signature; export your data before reinstalling. A dedicated private production signing key is needed before store distribution.
+- Android 8+ for manual tracking; Google Fit import requires supported Health Connect (normally Android 9+). Automatic import additionally requires background-read support and permission.
+- Offline bundled app and private phone storage. No health or financial data is sent to GitHub or a server. No direct Noise-app connection: Google Fit must share data with Health Connect.
+- **Daily comparison against your best previous completed day**, replacing the weekly Android dashboard. The selected day's recorded goal IDs are compared with completed previous days containing all those goals. Scores average goal percentages capped at 100%; missing data is not zero. Ties select the most recent day. Differences are percentage points. Income is separate from the activity score.
+- Tap goal/score cards and imported health readings for sources, values and calculations. Legacy entries without recorded provenance are labelled honestly. Imported readings remain distinct from manual overrides.
+- **Automatic sync around 5 PM and 11:55 PM**, in phone local time. Enable once on the dashboard and grant background/data permissions. Android can delay runs during idle or battery restrictions; force-stopping the app prevents jobs until reopened. Each run checks today and yesterday for late-arriving data. Snapshots are stored privately, then merged automatically when you open the dashboard. Manual overrides, including explicitly cleared fields, are protected. Last successful check and problems are shown.
+- Single-day and up-to-31-day historical imports remain in Journal. Older data requires past-data permission where supported. Only data actually shared by Google Fit can be read. Repeated imports do not duplicate dates. New historical records remain unfinished until reviewed.
+- Steps, distance, sleep/stages, heart rate, resting heart rate, calories, workouts, weight, height and oxygen saturation are supported where shared. Do not add active and total calories together. Workouts are not automatically added to the daily time budget. These are measurements, not diagnoses.
+- **Working years are independent of lifespan.** Default: work starts at age 18 and lasts 50 years; both are editable under Income & wealth. Time outside the working period becomes unallocated. Lifetime projections use the saved lifespan and recent finished logs.
+- **Monthly income**: actual take-home income and a target, stored to the paisa. Shows target percentage and change from the immediately previous month. Missing or zero prior income does not produce a misleading percentage.
+- **Wealth goal**: target amount in crore and target age, current savings/investments, monthly income/expenses/contributions, and separate income/contribution growth assumptions. Shows projected total, percentage, surplus/shortfall and a higher-investment scenario. Against ₹50 crore, ₹30 crore means 60% and ₹20 crore behind; ₹79 crore means 158% and ₹29 crore ahead. These are test examples, not predictions about your finances.
+- Projection uses month-end contributions, the monthly equivalent of annual investment return, annual contribution increases and 0% cash interest. Contributions stop after your working period; balances continue growing. Growth/return assumptions default to 0%. Results are nominal rupees; inflation, taxes and fees are not separately modelled. Use a net return assumption. Plans exceeding income after expenses are flagged. Results are estimates, not guarantees or investment recommendations.
+- Colored cards, larger touch targets, navigation icons, quick time buttons, optional exact seconds, entry sections and light/dark appearance. Family time remains removed; older family entries migrate into miscellaneous time.
+- JSON backup/restore includes finance and source information. Native printing and back navigation remain supported.
 
-### Android 1.2 Google Fit import
-In Google Fit, enable **Profile > Settings > Sync Fit with Health Connect** and allow Fit to write your data. In Progress %, open **Journal > Google Fit > Connect**, grant the read permissions you want, choose a date and tap **Import selected day**. For older records, expand **Import previous data**, select a range of up to 31 days, read it, review the summary and tap **Save imported history**. Review the available values, select which daily fields to apply, then tap **Save my day**.
-
-The importer reads only records shared by Google Fit (`com.google.android.apps.fitness`) through Health Connect. It does not connect to NoiseFit directly. Data visible in Fit is not necessarily written to Health Connect; unavailable values remain missing, never zero. Health Connect requires Android 9+ and may need installation/update on older phones.
-
-Supported types: steps, all-activity distance, sleep and stages, active/total calories, average/min/max and resting heart rate, workouts, latest daily weight/height and oxygen saturation when shared. Calories and heart rate retain their physical units; no invented medical percentage score is assigned. Sleep/workout intervals are clipped to the selected calendar day in the phone's current time zone. Duplicate sleep intervals are merged. If asleep stages exist, sleep uses reported asleep stages; otherwise it uses session duration minus reported awake time.
-
-This release imports **one selected day or a date range of up to 31 days, on demand**. You can import additional months in separate batches. Tap **Connect** and grant **Access past data** for older records where Health Connect supports it. Without this extra permission, Health Connect may restrict older history. No app can retrieve Google Fit records that were never shared to Health Connect. It does not perform background sync. Filled manual fields are unchecked by default; applying them requires explicitly selecting their checkbox. Workouts are stored separately and not automatically added to the activity budget, avoiding double counting. Historical imports fill only missing daily values and merge by date; re-importing does not create duplicate days. Days with no data are skipped. New historical records use your current personal targets and remain unfinished until reviewed. The import snapshot is saved with the daily record and included in JSON backups. Read access can be revoked in Health Connect. No health data is sent to GitHub or another server.
-
-Lifetime examples now use your saved planning lifespan. The remaining-years column is explicitly labelled as planning lifespan minus current age; it does not replace your whole-life horizon.
-
-### Android 1.1 entry redesign
-The Android daily journal has colour-coded Sleep, Time, Body and Notes sections, a teal/navy theme, larger touch controls, separate hours/minutes inputs, optional exact seconds, quick duration presets and step increments. Blank means unknown; an entered zero remains zero.
-
-Family time is removed from Android entry, targets and scoring. Existing family seconds are included in Miscellaneous and retained as archival metadata in version-2 backups, so recorded time is not lost.
-
-**Updating from previews 1–5:** those builds used temporary signing keys, so Android cannot install this update over them. First use **Profile > Export backup** in the old app and confirm the JSON file was saved. Then uninstall the old app, install the new APK, and use **Profile > Restore backup**. Do not uninstall before exporting if you have entries to keep. Build 6 uses an explicit cached key path for subsequent previews.
-
-### Android source and checks
-`android/prepare.py` holds the Gradle, manifest, Java activity, resources and instrumentation-test templates. It packages the existing dashboard with Android storage and backup integrations into a generated project in the GitHub runner's temporary directory. This avoids duplicating the web UI source.
-
-`.github/workflows/android.yml` builds the APK, checks its signature and manifest, runs Android 15 emulator tests, and publishes the APK plus SHA-256 checksum only after successful checks. Tests cover offline initialization, percentage calculations, time/sleep validation, grams/mm precision, persistence after activity recreation, reports, profile persistence, entry-section switching, duration controls, sleep-stage percentage updates, Family-time migration and demo isolation. Physical-phone and real document-provider backup/restore testing remain manual checks.
-
-Build stack: Java 17, Gradle 8.13, Android Gradle Plugin 8.11.1, compile/target SDK 36, AndroidX WebKit 1.14.0. The local-asset origin follows [Android's WebViewAssetLoader guidance](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content).
+Source templates are in android/prepare.py. GitHub Actions builds and tests the APK in an Android emulator, covering journal validation, persistence, imports, manual protection, daily comparison, income, wealth arithmetic and schedule boundaries. Passing emulator checks do not verify your phone's background timing or whether Google Fit shares every Noise-watch measurement.
 
 ## Website version
 
