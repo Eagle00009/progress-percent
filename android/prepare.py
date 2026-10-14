@@ -223,7 +223,7 @@ FIT_JS = r'''
   for(const raw of imports){
    const h=safeHealth(raw);if(!Object.keys(h.data).length)continue;
    let r=byDate.get(h.date);
-   if(!r)r={date:h.date,time:Object.fromEntries(ACTIVITIES.map(k=>[k,null])),stages:{deep:null,light:null,rem:null},steps:null,distance:null,weight:null,height:null,wellbeing:null,targets:structuredClone(next.profile.targets),custom:next.goals.map(g=>({...g,value:null})),note:'',complete:false};
+   if(!r)r={date:h.date,time:Object.fromEntries(ACTIVITIES.map(k=>[k,null])),stages:{deep:null,light:null,rem:null},steps:null,distance:null,weight:null,height:null,wellbeing:null,targets:structuredClone(next.profile.targets),custom:next.goals.map(g=>({...g,value:null})),note:'',complete:false,rules:structuredClone(next.goalRules||{})};
    r.health={...h,data:{...(r.health?.data||{}),...h.data}};
    for(const k of ['steps','distance','weight','height'])if(r[k]==null&&h.data[k]!=null)r[k]=Math.round(h.data[k]);
    if(r.time.sleep==null&&h.data.sleep!=null){
