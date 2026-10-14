@@ -27,6 +27,32 @@ jobs:
         with:
           path: ~/.android/debug.keystore
           key: progress-percent-preview-signing-v1
+      - name: Restore or preserve the existing signing key
+        env:
+          SIGNING_BACKUP_PASSWORD: ${{ secrets.SIGNING_BACKUP_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, subprocess
+          key = pathlib.Path.home() / '.android/debug.keystore'
+          backup = pathlib.Path('android/signing.keystore.gpg')
+          password = os.environ.get('SIGNING_BACKUP_PASSWORD', '')
+          if backup.exists():
+              if not password:
+                  raise SystemExit('Encrypted signing backup exists but its repository secret is missing.')
+              key.parent.mkdir(parents=True, exist_ok=True)
+              subprocess.run(['gpg','--batch','--yes','--pinentry-mode','loopback','--passphrase-fd','0','--output',str(key),'--decrypt',str(backup)],input=password.encode(),check=True)
+          elif password:
+              if not key.exists():
+                  raise SystemExit('Existing signing key is missing. Do not generate a replacement.')
+              subprocess.run(['gpg','--batch','--yes','--pinentry-mode','loopback','--passphrase-fd','0','--symmetric','--cipher-algo','AES256','--output',str(backup),str(key)],input=password.encode(),check=True)
+              subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
+              subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+              subprocess.run(['git','add',str(backup)],check=True)
+              subprocess.run(['git','commit','-m','Preserve encrypted Android signing key [skip ci]'],check=True)
+              subprocess.run(['git','push','origin','HEAD:main'],check=True)
+          else:
+              print('Using existing cached key. Durable signing awaits SIGNING_BACKUP_PASSWORD setup.')
+          PY
       - name: Prepare offline Android project
         run: |
           python android/prepare.py "$RUNNER_TEMP/progress-android"
@@ -76,10 +102,10 @@ jobs:
 
           Download **Progress-Percent-Android.apk** below on your Android phone and open it to install. Android 8.0 or newer with an updated Android System WebView is required.
 
-          Includes weekly progress, daily journal, sleep stages, body measurements, lifetime projections and custom goals. Data stays in the app. Use Profile > Export backup before uninstalling or clearing app data. Website backups can be restored using Profile > Restore backup.
+          Includes daily best comparisons by day type, target/limit/range scoring, quick check-in, per-measurement sync status, calendar, customizable dashboard, actual net worth, required-investment and inflation scenarios. Data stays in the app. Use Profile > Export backup before uninstalling or clearing app data. Website backups can be restored using Profile > Restore backup.
 
-          This is a preview APK, not a Google Play release. It uses a preview signing key cached by GitHub Actions. If that key expires, a later preview may require backing up and reinstalling.
+          This is a preview APK, not a Google Play release. It preserves the build-11 signing certificate. The build refuses to generate a replacement key. Durable encrypted signing backup is supported through a repository secret. Export a backup before installing updates.
 
           The build verifies the APK signature and runs Android emulator tests for offline loading, validation, reports, demo isolation and persistence after activity recreation. No physical-phone test has been performed.
           NOTES
-          gh release create "$tag" release/Progress-Percent-Android.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.0 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
+          gh release create "$tag" release/Progress-Percent-Android.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.4 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
