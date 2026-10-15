@@ -2,11 +2,23 @@
 
 An Android tracker with daily personal-best comparisons, Google Fit imports, income and wealth planning, and lifetime projections.
 
-## Android app — 1.3 preview
+## Android app — 1.4 preview
 
-Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-11). These features apply to Android; the website section below describes the older separate web version.
+Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-16). These features apply to Android; the website section below describes the older separate web version.
 
-**Back up before updating.** The signing-key cache from previews 6–8 expired before build 9. Builds 9 onward use a new signing certificate. Android cannot install them over an app signed with the old key. Export your JSON backup from the installed app first, keep it safe, then reinstall only if Android requires it, and restore the backup. Uninstalling without a backup removes your data. Preview signing uses a GitHub Actions cache, not a permanent production signing arrangement.
+**Back up before updating.** The signing-key cache from previews 6–8 expired before build 9. Builds 9 onward use a new signing certificate. Android cannot install them over an app signed with the old key. Export your JSON backup from the installed app first, keep it safe, then reinstall only if Android requires it, and restore the backup. Uninstalling without a backup removes your data. The current signing key now has an AES-256 encrypted repository backup, protected by the GitHub Actions SIGNING_BACKUP_PASSWORD secret. Builds restore that backup and refuse to generate replacement keys. Keep both the encrypted file and the secret. Updates use the same certificate as build 11.
+
+### Added in 1.4
+
+- **Backup reminders:** the dashboard shows the last successful export and reminds you after seven days. The timestamp is recorded only after the file provider finishes saving. Exported files remain under your control.
+- **Fair daily comparisons:** choose Workday or Rest day in Journal. New days default from the weekday, then you can override them. Best-day comparisons require the same day type and matching scoring rules. Today remains labelled “Today so far” until finished. Legacy day types use the weekday default.
+- **Scoring modes:** Profile → Goal scoring supports Reach target, Stay below target limit, and Stay within range. Reach uses actual/target capped at 100%; limit gives 100% at/below the target and target/actual above it; range gives 100% inside the entered bounds and proportionally less outside. Missing values stay missing. Rules are saved with each date; changes apply to new dates, including newly imported days. Existing entries retain their rules. Range bounds use the displayed raw units, including seconds for time.
+- **One-minute check-in:** Show missing fields, Show all fields, and Copy yesterday’s routine. Copy fills only blank work, friends, learning, personal-care and miscellaneous fields, checks the 24-hour budget and leaves the result as a draft for review. Synced measurements are filled by the existing import flow.
+- **Per-measurement sync status:** Updated, Waiting for shared data, Permission needed or Read failed, with the available read timestamp. Waiting does not mean a zero reading. Legacy imports without status metadata can only show their saved availability.
+- **Actual net worth:** Income & wealth → Actual net worth records monthly cash, investments and debts in paise. Net worth is cash + investments − debts, with a history table and percentage of your goal. These actual balances are separate from the future projection.
+- **Required-investment calculator:** Income & wealth → What needs to change? calculates total monthly investment needed under the saved return/contribution-growth assumptions. Adjust the age when contributions stop and inflation; optionally use the latest actual balances as today's starting point or treat the target as today's purchasing power. Results include projected purchasing power and affordability after expenses and cash savings. Debt interest and repayments are not modelled. An old actual snapshot should be updated before using it as today's balance.
+- **Daily calendar:** Overview → Daily calendar. Tap a date for its best-day comparison; unfinished and missing entries are marked. Future days are disabled.
+- **Custom dashboard:** Overview → Customize dashboard. Reorder or hide scores, goals, finance, sync, imported health and backup cards. Navigation stays accessible. Preferences survive app restarts and backups.
 
 - Android 8+ for manual tracking; Google Fit import requires supported Health Connect (normally Android 9+). Automatic import additionally requires background-read support and permission.
 - Offline bundled app and private phone storage. No health or financial data is sent to GitHub or a server. No direct Noise-app connection: Google Fit must share data with Health Connect.
