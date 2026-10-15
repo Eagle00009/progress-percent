@@ -66,6 +66,14 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Progress-Percent-Android.apk | head -n 15
           cd release
           sha256sum Progress-Percent-Android.apk > SHA256SUMS.txt
+      - name: Build side-by-side migration APK
+        run: |
+          gradle -p "$RUNNER_TEMP/progress-android" -Pmigration=true assembleRelease --no-daemon
+          cp "$RUNNER_TEMP/progress-android/app/build/outputs/apk/release/app-release.apk" release/Progress-Percent-New.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs release/Progress-Percent-New.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Progress-Percent-New.apk | head -n 15
+          cd release
+          sha256sum Progress-Percent-Android.apk Progress-Percent-New.apk > SHA256SUMS.txt
       - name: Enable emulator acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -78,7 +86,18 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          script: gradle -p "$RUNNER_TEMP/progress-android" connectedDebugAndroidTest --no-daemon
+          script: |
+            gradle -p "$RUNNER_TEMP/progress-android" connectedDebugAndroidTest --no-daemon
+            keytool -genkeypair -keystore "$RUNNER_TEMP/legacy-fixture.keystore" -storepass fixture-only -alias fixture -keypass fixture-only -keyalg RSA -keysize 2048 -validity 2 -dname "CN=Disposable Emulator Fixture" -noprompt
+            cp "$RUNNER_TEMP/progress-android/app/build/outputs/apk/debug/app-debug.apk" "$RUNNER_TEMP/legacy-fixture.apk"
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$RUNNER_TEMP/legacy-fixture.keystore" --ks-pass pass:fixture-only --ks-key-alias fixture "$RUNNER_TEMP/legacy-fixture.apk"
+            adb uninstall com.jeevesh.progress || true
+            adb install "$RUNNER_TEMP/legacy-fixture.apk"
+            adb shell run-as com.jeevesh.progress mkdir -p files
+            adb shell run-as com.jeevesh.progress touch files/migration-sentinel
+            gradle -p "$RUNNER_TEMP/progress-android" -Pmigration=true connectedDebugAndroidTest --no-daemon
+            adb shell pm path com.jeevesh.progress
+            adb shell run-as com.jeevesh.progress test -f files/migration-sentinel
       - name: Save test report
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,12 +119,12 @@ jobs:
           cat > "$RUNNER_TEMP/release-notes.md" <<'NOTES'
           Installable offline Android preview of Progress %.
 
-          Download **Progress-Percent-Android.apk** below on your Android phone and open it to install. Android 8.0 or newer with an updated Android System WebView is required.
+          If Android reports a package conflict, download **Progress-Percent-New.apk**. It installs as **Progress % New** beside the old app. Keep the old app, export its backup from Profile, then restore that JSON file in the new app. Re-enable Health Connect permissions and auto sync in the new app. The normal **Progress-Percent-Android.apk** remains for compatible existing installations. Android 8.0 or newer with an updated Android System WebView is required.
 
           Includes daily best comparisons by day type, target/limit/range scoring, quick check-in, per-measurement sync status, calendar, customizable dashboard, actual net worth, required-investment and inflation scenarios. Data stays in the app. Use Profile > Export backup before uninstalling or clearing app data. Website backups can be restored using Profile > Restore backup.
 
           This is a preview APK, not a Google Play release. It preserves the build-11 signing certificate. The build refuses to generate a replacement key. Durable encrypted signing backup is supported through a repository secret. Export a backup before installing updates.
 
-          The build verifies the APK signature and runs Android emulator tests for offline loading, validation, reports, demo isolation and persistence after activity recreation. No physical-phone test has been performed.
+          The build verifies the APK signature and runs Android emulator tests for offline loading, validation, reports, demo isolation and persistence after activity recreation. The migration app is also tested beside a disposable old-package fixture signed with a different key; its private test file must remain intact. No physical-phone test has been performed.
           NOTES
-          gh release create "$tag" release/Progress-Percent-Android.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.4 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
+          gh release create "$tag" release/Progress-Percent-Android.apk release/Progress-Percent-New.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.4.1 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
