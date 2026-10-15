@@ -4,7 +4,7 @@ An Android tracker with daily personal-best comparisons, Google Fit imports, inc
 
 ## Android app — 1.4 preview
 
-Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-16). These features apply to Android; the website section below describes the older separate web version.
+Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-17). These features apply to Android; the website section below describes the older separate web version.
 
 **Back up before updating.** The signing-key cache from previews 6–8 expired before build 9. Builds 9 onward use a new signing certificate. Android cannot install them over an app signed with the old key. Export your JSON backup from the installed app first, keep it safe, then reinstall only if Android requires it, and restore the backup. Uninstalling without a backup removes your data. The current signing key now has an AES-256 encrypted repository backup, protected by the GitHub Actions SIGNING_BACKUP_PASSWORD secret. Builds restore that backup and refuse to generate replacement keys. Keep both the encrypted file and the secret. Updates use the same certificate as build 11.
 
