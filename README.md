@@ -2,9 +2,11 @@
 
 An Android tracker with daily personal-best comparisons, Google Fit imports, income and wealth planning, and lifetime projections.
 
-## Android app — 1.4 preview
+## Android app — 1.4.1 preview
 
-Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-17). These features apply to Android; the website section below describes the older separate web version.
+Download the APK from the [latest tested Android release](https://github.com/Eagle00009/progress-percent/releases/tag/android-preview-19). These features apply to Android; the website section below describes the older separate web version.
+
+**If Android says “package conflicts with an existing package”: use [Progress-Percent-New.apk](https://github.com/Eagle00009/progress-percent/releases/download/android-preview-19/Progress-Percent-New.apk).** It installs as **Progress % New**, package com.jeevesh.progress.migration, beside the old Progress % app. Keep the old app installed. Export its JSON backup from Profile, then open Progress % New → Profile → Restore backup. Confirm your entries before removing anything. Reconnect Health Connect and enable auto sync in the new app; phone permissions do not transfer through a data backup. The normal APK remains for installations already using the current signing key.
 
 **Back up before updating.** The signing-key cache from previews 6–8 expired before build 9. Builds 9 onward use a new signing certificate. Android cannot install them over an app signed with the old key. Export your JSON backup from the installed app first, keep it safe, then reinstall only if Android requires it, and restore the backup. Uninstalling without a backup removes your data. The current signing key now has an AES-256 encrypted repository backup, protected by the GitHub Actions SIGNING_BACKUP_PASSWORD secret. Builds restore that backup and refuse to generate replacement keys. Keep both the encrypted file and the secret. Updates use the same certificate as build 11.
 
