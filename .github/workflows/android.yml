@@ -87,6 +87,8 @@ jobs:
           target: google_apis
           disable-animations: true
           script: |
+            adb shell wm size 720x1600
+            adb shell wm density 320
             gradle -p "$RUNNER_TEMP/progress-android" connectedDebugAndroidTest --no-daemon
             keytool -genkeypair -keystore "$RUNNER_TEMP/legacy-fixture.keystore" -storepass fixture-only -alias fixture -keypass fixture-only -keyalg RSA -keysize 2048 -validity 2 -dname "CN=Disposable Emulator Fixture" -noprompt
             cp "$RUNNER_TEMP/progress-android/app/build/outputs/apk/debug/app-debug.apk" "$RUNNER_TEMP/legacy-fixture.apk"
