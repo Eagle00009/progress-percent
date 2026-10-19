@@ -524,7 +524,10 @@ UI_JS = r'''
  const fit=$('#fitConnect')?.closest('article');if(fit&&!fit.dataset.uiCompact){fit.dataset.uiCompact='1';const d=document.createElement('details');d.id='healthImportTools';const s=document.createElement('summary');s.innerHTML=icon('health')+' Google Fit imports';d.append(s);while(fit.firstChild)d.append(fit.firstChild);fit.append(d)}
  const dayType=$('#entryDayType');const tools=$('#entryTools')||dayType?.closest('article');if(tools&&!tools.dataset.uiCompact){tools.id='entryTools';tools.dataset.uiCompact='1';const dateField=$('#entryDate').closest('fieldset');dateField.classList.add('date-grid');dateField.append(dayType.closest('label'));tools.querySelector('h3')?.remove();const d=document.createElement('details'),s=document.createElement('summary');s.textContent='Quick entry tools';d.append(s);while(tools.firstChild)d.append(tools.firstChild);tools.append(d);dateField.after(tools)}
  const demo=$('#demoBtn');if(demo&&!$('#appearanceCard')){const card=document.createElement('article');card.className='card';card.id='appearanceCard';card.innerHTML='<div class="eyebrow">Make it yours</div><h2>Explore with sample data</h2><p class="muted">Try the dashboard without changing your saved entries.</p>';card.append(demo);$('#settings').append(card)}
- const transfer=$('#transferBackup');if(transfer&&!transfer.closest('details')){const aside=transfer.closest('aside');const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Moving from your older app?';details.append(summary);while(aside.firstChild)details.append(aside.firstChild);aside.append(details)}
+ const footer=$('main > footer');if(footer&&footer!==$('main').lastElementChild)$('main').append(footer);
+ const theme=$('#themeBtn');if(theme&&theme.parentElement!==$('.sidebar'))$('.sidebar').append(theme);
+ $('#demoBanner').textContent='Sample data · temporary. Exit demo in Profile.';
+ const transfer=$('#transferBackup');if(transfer&&!transfer.closest('details')){const aside=transfer.closest('aside');const details=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Moving from your older app?';details.append(summary);while(aside.firstChild)details.append(aside.firstChild);aside.append(details);$('#settings').prepend(aside)}
  }
  const beforeDash=renderDashboard;renderDashboard=function(){beforeDash();dashboard()};
  const beforeRender=render;render=function(){beforeRender();paint()};
@@ -546,6 +549,8 @@ button,input,select,textarea{font:inherit}button{border-radius:12px;min-height:4
 @media(max-width:380px){.top h1{font-size:22px}#logBtn{font-size:11px;padding:10px}.score-hero{padding-right:140px!important}.score-ring{width:110px;height:110px;right:16px;top:32px}.score-ring .kpi{font-size:28px}.money-grid .kpi{font-size:23px}.goal-grid .metric-tap>span{gap:6px}.goal-grid .metric-tap .ui-icon{width:16px;height:16px}}
 
 .highlight{background:linear-gradient(120deg,#263777,#4054c7);color:#fff}#dashboard #dayScore .score-ring .kpi{font-size:32px}.date-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.date-grid label{min-width:0}.date-grid #entryDayType{max-width:100%;width:100%}#dayForm>.note{margin:12px 0}#healthImportTools>summary{display:flex;align-items:center;gap:10px}#healthImportTools h3{display:none}
+
+@media(max-width:760px){.sidebar{position:relative;padding-bottom:0}.sidebar>#themeBtn{position:absolute;right:16px;top:12px;min-height:40px;width:40px;background:var(--paper)}.top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.top .actions{flex-wrap:nowrap}.top h1{font-size:22px}.top .eyebrow{font-size:9px;letter-spacing:.8px}#logBtn{font-size:12px;padding:9px 11px;white-space:nowrap}#demoBanner{font-size:11px;padding:10px 12px;line-height:1.5}#dashboard .toolbar>div:first-child{display:none}#dashboard .toolbar>label{padding:8px 12px}.foot{font-size:11px;margin-top:24px}#dashboard .toolbar{margin:0}}
 '''
 
 def prepare(destination):
