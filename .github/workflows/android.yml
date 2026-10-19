@@ -98,6 +98,21 @@ jobs:
             gradle -p "$RUNNER_TEMP/progress-android" -Pmigration=true connectedDebugAndroidTest --no-daemon
             adb shell pm path com.jeevesh.progress
             adb shell run-as com.jeevesh.progress test -f files/migration-sentinel
+            mkdir -p docs/ui
+            adb pull /sdcard/Download/progress-ui-overview.png docs/ui/overview.png
+            adb pull /sdcard/Download/progress-ui-journal.png docs/ui/journal.png
+            adb pull /sdcard/Download/progress-ui-finance.png docs/ui/finance.png
+            adb pull /sdcard/Download/progress-ui-dark.png docs/ui/dark.png
+      - name: Publish fictional demo UI previews
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/ui/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update Android UI demo previews [skip ci]'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
       - name: Save test report
         if: always()
         uses: actions/upload-artifact@v4
@@ -121,10 +136,12 @@ jobs:
 
           If Android reports a package conflict, download **Progress-Percent-New.apk**. It installs as **Progress % New** beside the old app. Keep the old app, export its backup from Profile, then restore that JSON file in the new app. Re-enable Health Connect permissions and auto sync in the new app. The normal **Progress-Percent-Android.apk** remains for compatible existing installations. Android 8.0 or newer with an updated Android System WebView is required.
 
+          Redesigned interface with an indigo and mint daily score ring, consistent line icons, clearer goal cards, streamlined daily entry and grouped finance inputs. Light and dark themes. Demo-only emulator screenshots are available in docs/ui.
+
           Includes daily best comparisons by day type, target/limit/range scoring, quick check-in, per-measurement sync status, calendar, customizable dashboard, actual net worth, required-investment and inflation scenarios. Data stays in the app. Use Profile > Export backup before uninstalling or clearing app data. Website backups can be restored using Profile > Restore backup.
 
           This is a preview APK, not a Google Play release. It preserves the build-11 signing certificate. The build refuses to generate a replacement key. Durable encrypted signing backup is supported through a repository secret. Export a backup before installing updates.
 
           The build verifies the APK signature and runs Android emulator tests for offline loading, validation, reports, demo isolation and persistence after activity recreation. The migration app is also tested beside a disposable old-package fixture signed with a different key; its private test file must remain intact. No physical-phone test has been performed.
           NOTES
-          gh release create "$tag" release/Progress-Percent-Android.apk release/Progress-Percent-New.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.4.1 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
+          gh release create "$tag" release/Progress-Percent-Android.apk release/Progress-Percent-New.apk release/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Progress % Android 1.5.0 preview (build ${GITHUB_RUN_NUMBER})" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease
